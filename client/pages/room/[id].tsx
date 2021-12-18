@@ -2,23 +2,23 @@ import { Grid } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { Video } from '../../components/video/Video';
-import { join_room } from '../../util/video';
+import { disconnect, join_room } from '../../util/video';
 
 const RoomPage = (): JSX.Element => {
   const router = useRouter();
   const roomId = router.query.id as string;
 
   React.useEffect(() => {
-    join_room(roomId, '1');
+    join_room(roomId, '2');
 
-    return () => {
-      console.log('left room');
-    };
+    // return () => {
+    //   disconnect();
+    // };
   }, [roomId]);
 
   return (
     <React.Fragment>
-      <Grid templateColumns='repeat(5, 1fr)' gap={2}>
+      <Grid padding={5} templateColumns='repeat(5, 1fr)' gap={2}>
         <Video />
       </Grid>
     </React.Fragment>
