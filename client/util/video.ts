@@ -1,24 +1,14 @@
-import { manager } from './sockets';
-const socket = manager.socket('/video');
+import {
+  createClient,
+  createMicrophoneAndCameraTracks,
+  ClientConfig,
+} from 'agora-rtc-react';
 
-export const join_room = (roomId: string, userId: string): void => {
-  //envia datos a server
-  socket.emit('joinRoom', { roomId, userId });
-
-  //recive datos de server
-  socket.on('joinRoom', (userId: string) => {
-    console.log('user joined room' + userId);
-  });
+export const config: ClientConfig = {
+  mode: 'rtc',
+  codec: 'vp8',
 };
 
-export const disconnect = (): void => {
-  socket.on('disconnected', (id: string) => {
-    console.log(`${id} disconnected`);
-  });
-};
-
-export const me = () => {
-  socket.on('me', (id: string) => {
-    console.log(`id ${id}`);
-  });
-};
+export const useClient = createClient(config);
+export const useMicroPhoneAndCameraTracks = createMicrophoneAndCameraTracks();
+export const channelName = 'main';
