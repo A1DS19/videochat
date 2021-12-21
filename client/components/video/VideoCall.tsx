@@ -100,3 +100,5 @@ export const VideoCall: NextPage<VideoCallProps> = ({ setInCall }): JSX.Element 
     </React.Fragment>
   );
 };
+
+export default VideoCall;
