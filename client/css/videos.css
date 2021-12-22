@@ -1,0 +1,21 @@
+.videos {
+  position: relative;
+  height: 85vh;
+  width: 100vw;
+  margin: auto;
+  align-self: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  justify-items: center;
+  align-items: center;
+}
+
+.video {
+  position: relative;
+  background-color: black;
+  height: 95%;
+  width: 95%;
+  border-width: 1px;
+  border-color: #38373a;
+  border-style: solid;
+}

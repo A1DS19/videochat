@@ -7,7 +7,7 @@ import {
   IMicrophoneAudioTrack,
 } from 'agora-rtc-react';
 import { Video } from './Video';
-import { SimpleGrid } from '@chakra-ui/react';
+import { Box, SimpleGrid } from '@chakra-ui/react';
 
 interface VideoListProps {
   tracks: [IMicrophoneAudioTrack, ICameraVideoTrack];
@@ -22,25 +22,24 @@ export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Elem
     setGridSpacing(Math.max(Math.floor(12 / (users.length + 1)), 4));
   }, [users, tracks]);
 
-  const renderVideos = (): void => {
-    users.length > 0 &&
+  const renderVideos = (): false | (JSX.Element | null)[] => {
+    return (
+      users.length > 0 &&
       users.map((user) => {
         if (user.hasVideo) {
           return <Video key={user.uid} videoTrack={user.videoTrack!} />;
         }
         return null;
-      });
+      })
+    );
   };
 
   return (
     <React.Fragment>
-      <SimpleGrid columns={users.length} spacing={gridSpacing}>
-        <AgoraVideoPlayer
-          videoTrack={tracks[1]}
-          style={{ height: '100%', width: '100%' }}
-        />
-        {renderVideos}
-      </SimpleGrid>
+      <Box className='videos'>
+        <AgoraVideoPlayer className='video' videoTrack={tracks[1]} />
+        {renderVideos()}
+      </Box>
     </React.Fragment>
   );
 };

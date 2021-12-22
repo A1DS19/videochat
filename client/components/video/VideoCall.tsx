@@ -1,20 +1,22 @@
 import React from 'react';
 import type { NextPage } from 'next';
-import {
-  channelName as channelNameProps,
-  useClient,
-  useMicroPhoneAndCameraTracks,
-} from '../../util/video';
+import { useClient, useMicroPhoneAndCameraTracks, AGORA_APP_ID } from '../../util/video';
 import { IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
-import { SimpleGrid } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { Controls } from './Controls';
 import { VideoList } from './VideoList';
 
 interface VideoCallProps {
   setInCall: React.Dispatch<React.SetStateAction<boolean>>;
+  roomName: string;
+  token: string;
 }
 
-export const VideoCall: NextPage<VideoCallProps> = ({ setInCall }): JSX.Element => {
+export const VideoCall: NextPage<VideoCallProps> = ({
+  setInCall,
+  roomName,
+  token,
+}): JSX.Element => {
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
   const client = useClient();
@@ -56,13 +58,12 @@ export const VideoCall: NextPage<VideoCallProps> = ({ setInCall }): JSX.Element 
 
       try {
         await client.join(
-          process.env.AGORA_APP_ID!,
-          channelName, //Deberia pasarse como props
-          process.env.AGORA_TOKEN!,
+          AGORA_APP_ID,
+          channelName,
+          token,
           null //Se puede setear manualmente(user id)
         );
 
-        //Se publica NUESTRO stream al room
         if (tracks) {
           await client.publish([tracks[0], tracks[1]]);
         }
@@ -75,16 +76,16 @@ export const VideoCall: NextPage<VideoCallProps> = ({ setInCall }): JSX.Element 
 
     if (ready && tracks) {
       try {
-        init(channelNameProps);
+        init(roomName);
       } catch (err) {
         console.log(err);
       }
     }
-  }, [client, ready, tracks]);
+  }, [client, ready, tracks, roomName, token]);
 
   return (
     <React.Fragment>
-      <SimpleGrid columns={4} spacing={2}>
+      <Box maxWidth={'30%'}>
         {ready && tracks && (
           <React.Fragment>
             <Controls setInCall={setInCall} setStart={setStart} tracks={tracks} />
@@ -96,7 +97,7 @@ export const VideoCall: NextPage<VideoCallProps> = ({ setInCall }): JSX.Element 
             <VideoList setInCall={setInCall} tracks={tracks} users={users} />
           </React.Fragment>
         )}
-      </SimpleGrid>
+      </Box>
     </React.Fragment>
   );
 };

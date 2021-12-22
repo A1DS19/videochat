@@ -9,10 +9,7 @@ interface VideoProps {
 export const Video: NextPage<VideoProps> = ({ videoTrack }): JSX.Element => {
   return (
     <React.Fragment>
-      <AgoraVideoPlayer
-        videoTrack={videoTrack}
-        style={{ height: '100%', width: '100%' }}
-      />
+      <AgoraVideoPlayer className='video' videoTrack={videoTrack} />
     </React.Fragment>
   );
 };

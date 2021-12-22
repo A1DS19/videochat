@@ -1,3 +1,9 @@
-export interface ENV_CONFIGURATION {}
+export interface ENV_CONFIGURATION {
+  AGORA_APP_ID: string;
+  AGORA_APP_CERTIFICATE: string;
+}
 
-export const env_configuration = (): ENV_CONFIGURATION => ({});
+export default (): ENV_CONFIGURATION => ({
+  AGORA_APP_ID: process.env.AGORA_APP_ID,
+  AGORA_APP_CERTIFICATE: process.env.AGORA_APP_CERTIFICATE,
+});
