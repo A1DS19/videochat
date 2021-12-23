@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from 'config/configuration';
-import { ChannelsModule } from './channels/channels.module';
-
+import { RoomsModule } from './rooms/rooms.module';
+import config from '../ormconfig';
 @Module({
   imports: [
-    ChannelsModule,
+    RoomsModule,
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    TypeOrmModule.forRoot(config),
   ],
   controllers: [],
   providers: [],

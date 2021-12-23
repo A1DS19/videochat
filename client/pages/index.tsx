@@ -11,6 +11,8 @@ const Home: NextPage = () => {
         <meta name='description' content='Join a room and chat' />
         <link rel='icon' href='/favicon.ico' />
       </Head>
+
+      <h1>View all streams</h1>
     </div>
   );
 };

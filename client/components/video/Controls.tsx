@@ -1,8 +1,9 @@
 import React from 'react';
 import type { NextPage } from 'next';
 import { IMicrophoneAudioTrack, ICameraVideoTrack } from 'agora-rtc-react';
-import { useClient } from '../../util/video';
 import { Button, SimpleGrid } from '@chakra-ui/react';
+import { useClient } from './VideoCall';
+import { useRouter } from 'next/router';
 
 interface ControlsProps {
   tracks: [IMicrophoneAudioTrack, ICameraVideoTrack];
@@ -17,6 +18,7 @@ export const Controls: NextPage<ControlsProps> = ({
 }): JSX.Element => {
   type mediaType = 'audio' | 'video';
   const client = useClient();
+  const router = useRouter();
   const [trackState, setTrackState] = React.useState<{ video: boolean; audio: boolean }>({
     video: true,
     audio: true,
@@ -73,7 +75,14 @@ export const Controls: NextPage<ControlsProps> = ({
         >
           VIDEO
         </Button>
-        <Button onClick={async () => await leaveChannel()}>LEAVE</Button>
+        <Button
+          onClick={async () => {
+            await leaveChannel();
+            router.push('/');
+          }}
+        >
+          LEAVE
+        </Button>
       </SimpleGrid>
     </React.Fragment>
   );

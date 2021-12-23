@@ -1,25 +1,62 @@
-import { Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { AGORA_TOKEN } from '../../util/video';
+import axios from 'axios';
 
 const DynamicVideoCall = dynamic(() => import('../../components/video/VideoCall'), {
   ssr: false,
 });
 
-//Por alguna razon pasar variables de otros archivos activa ssr
-
 const RoomPage = (): JSX.Element => {
   const router = useRouter();
-  const roomName = router.query.roomName as string;
   const [inCall, setInCall] = React.useState<boolean>(false);
+  const roomName = router.query.roomName as string;
+  const [token, setToken] = React.useState<string | null>(null);
+  const [uid, setUid] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!roomName) {
+      return;
+    }
+
+    async function getCredentials() {
+      try {
+        setLoading(true);
+
+        const { data } = await axios.post('http://localhost:5000/rooms/create', {
+          uid: Math.floor(Math.random() * 100),
+          roomName,
+        });
+
+        setToken(data.token);
+        setUid(data.uid);
+
+        setInCall(true);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getCredentials();
+  }, [roomName]);
+
+  if (loading) {
+    return <div>loading</div>;
+  }
 
   return (
     <React.Fragment>
-      <Button onClick={() => setInCall(true)}>JOIN</Button>
+      <h1>Welcome to room {roomName}</h1>
       {inCall && (
-        <DynamicVideoCall setInCall={setInCall} roomName={roomName} token={'gfdsgfsd'} />
+        <DynamicVideoCall
+          setInCall={setInCall}
+          roomName={roomName && roomName}
+          token={token! && token.replaceAll(' ', '+')}
+          uid={uid! && uid}
+        />
       )}
     </React.Fragment>
   );
