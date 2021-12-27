@@ -1,10 +1,7 @@
-import { IsNumber, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateRoomDto {
+  @IsNotEmpty()
   @IsString({ message: 'The room name is required' })
   roomName: string;
-
-  @IsNumber()
-  @Min(1)
-  uid: string;
 }

@@ -1,5 +1,7 @@
-export type CreateRoom = {
+export type CreateRoomRes = {
   roomName: string;
   token: string;
-  uid: string;
+  uid: number;
 };
+
+export type GetTokenRes = CreateRoomRes;

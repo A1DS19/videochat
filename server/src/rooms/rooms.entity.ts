@@ -1,19 +1,28 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/users.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity({ name: 'rooms' })
-export class Rooms {
+@Entity({ name: 'room' })
+export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 50 })
+  @Column('varchar', { length: 50, unique: true })
   name: string;
 
   @Column()
-  creator_id: number;
+  creatorId: number;
 
-  @Column()
-  participant_id: number;
+  @ManyToOne(() => User, (user) => user.rooms)
+  @JoinColumn({ name: 'creatorId', referencedColumnName: 'id' })
+  creator: User;
 
-  @Column({ default: +new Date() })
+  @CreateDateColumn()
   created_at: string;
 }

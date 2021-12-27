@@ -24,10 +24,11 @@ const RoomPage = (): JSX.Element => {
       try {
         setLoading(true);
 
-        const { data } = await axios.post('http://localhost:5000/rooms/create', {
-          uid: Math.floor(Math.random() * 100),
-          roomName,
-        });
+        const { data } = await axios.get(
+          `http://localhost:5000/rooms/token?roomName=${roomName}&uid=${Math.floor(
+            Math.random() * 1000
+          )}`
+        );
 
         setToken(data.token);
         setUid(data.uid);
@@ -35,6 +36,7 @@ const RoomPage = (): JSX.Element => {
         setInCall(true);
       } catch (err) {
         console.log(err);
+        router.push('/404');
       } finally {
         setLoading(false);
       }

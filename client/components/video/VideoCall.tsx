@@ -75,7 +75,8 @@ export const VideoCall: NextPage<VideoCallProps> = ({
       });
 
       try {
-        await client.join(appID, channelName, token, parseInt(uid));
+        //test con string en uid
+        await client.join(appID, channelName, token, uid);
 
         if (tracks) {
           await client.publish([tracks[0], tracks[1]]);
