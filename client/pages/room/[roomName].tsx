@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 import React from 'react';
 import dynamic from 'next/dynamic';
-import axios from 'axios';
+import { getRoomToken } from '../../shared/rooms';
+import { useMutation } from 'react-query';
 
 const DynamicVideoCall = dynamic(() => import('../../components/video/VideoCall'), {
   ssr: false,
@@ -13,7 +14,17 @@ const RoomPage = (): JSX.Element => {
   const roomName = router.query.roomName as string;
   const [token, setToken] = React.useState<string | null>(null);
   const [uid, setUid] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(false);
+
+  const { isLoading, mutate } = useMutation(getRoomToken, {
+    onSuccess: (data) => {
+      setToken(data.token);
+      setUid(data.uid.toString());
+      setInCall(true);
+    },
+    onError: () => {
+      router.push('/404');
+    },
+  });
 
   React.useEffect(() => {
     if (!roomName) {
@@ -21,31 +32,13 @@ const RoomPage = (): JSX.Element => {
     }
 
     async function getCredentials() {
-      try {
-        setLoading(true);
-
-        const { data } = await axios.get(
-          `http://localhost:5000/rooms/token?roomName=${roomName}&uid=${Math.floor(
-            Math.random() * 1000
-          )}`
-        );
-
-        setToken(data.token);
-        setUid(data.uid);
-
-        setInCall(true);
-      } catch (err) {
-        console.log(err);
-        router.push('/404');
-      } finally {
-        setLoading(false);
-      }
+      mutate({ roomName, uid: null });
     }
 
     getCredentials();
-  }, [roomName]);
+  }, [roomName, router, mutate]);
 
-  if (loading) {
+  if (isLoading) {
     return <div>loading</div>;
   }
 
