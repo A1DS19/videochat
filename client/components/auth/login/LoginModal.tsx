@@ -21,7 +21,7 @@ export const LoginModal: NextPage<LoginModalProps> = ({
 }): JSX.Element => {
   return (
     <React.Fragment>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Login to your account</ModalHeader>

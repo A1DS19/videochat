@@ -6,12 +6,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalCloseButton,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  Input,
-  ModalFooter,
-  Button,
 } from '@chakra-ui/react';
 import { SignupForm } from './SignupForm';
 
@@ -27,7 +21,7 @@ export const SignupModal: NextPage<SignupModalProps> = ({
 }): JSX.Element => {
   return (
     <React.Fragment>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create your account</ModalHeader>

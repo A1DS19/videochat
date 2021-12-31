@@ -8,27 +8,32 @@ import {
   dehydrate,
   UseQueryResult,
 } from 'react-query';
-import * as api from '../shared/rooms';
-import Link from 'next/link';
+import { Error, Room } from '../shared/context/rooms/types';
+import * as api from '../shared/context/rooms/rooms';
+import { Box } from '@chakra-ui/react';
+import { RoomIndex } from '../components/rooms/RoomIndex';
+import { RoomsContext } from '../shared/context/rooms/RoomsProvider';
 
 const Home: NextPage = () => {
-  const { data, isError, error }: UseQueryResult<api.Room, api.Error> = useQuery<
-    api.Room,
-    api.Error
-  >('rooms/all_rooms', api.getAllRooms);
+  const { addRooms } = React.useContext(RoomsContext);
+  const { data, isError, error }: UseQueryResult<Room[], Error> = useQuery<Room[], Error>(
+    'rooms/all_rooms',
+    api.getAllRooms
+  );
 
-  console.log(data);
+  React.useEffect(() => {
+    addRooms(data as Room[]);
+  }, [data, addRooms]);
 
   return (
-    <div>
+    <Box>
       <Head>
         <title>VIDEO CHAT APP</title>
         <meta name='description' content='Join a room and chat' />
         <link rel='icon' href='/favicon.ico' />
       </Head>
-
-      <h1>View all streams</h1>
-    </div>
+      <RoomIndex />
+    </Box>
   );
 };
 

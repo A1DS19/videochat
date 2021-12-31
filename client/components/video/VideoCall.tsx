@@ -25,6 +25,7 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 }): JSX.Element => {
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
+
   const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
 
   config = {
@@ -33,12 +34,11 @@ export const VideoCall: NextPage<VideoCallProps> = ({
     appId: appID,
     token: token,
   };
-
   useClient = createClient(config);
-  useMicroPhoneAndCameraTracks = createMicrophoneAndCameraTracks();
-
   const client = useClient();
-  const { ready, tracks, error } = useMicroPhoneAndCameraTracks();
+
+  useMicroPhoneAndCameraTracks = createMicrophoneAndCameraTracks();
+  const { ready, tracks } = useMicroPhoneAndCameraTracks();
 
   React.useEffect(() => {
     let init = async (channelName: string) => {
@@ -75,7 +75,6 @@ export const VideoCall: NextPage<VideoCallProps> = ({
       });
 
       try {
-        //test con string en uid
         await client.join(appID, channelName, token, uid);
 
         if (tracks) {

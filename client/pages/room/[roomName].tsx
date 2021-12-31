@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { getRoomToken } from '../../shared/rooms';
+import { getRoomToken } from '../../shared/context/rooms/rooms';
 import { useMutation } from 'react-query';
 
 const DynamicVideoCall = dynamic(() => import('../../components/video/VideoCall'), {

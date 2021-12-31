@@ -6,6 +6,13 @@ import { Layout } from '../components/shared/Layout';
 import { QueryClient, QueryClientProvider, Hydrate } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import React from 'react';
+import { RoomsProvider } from '../shared/context/rooms/RoomsProvider';
+import { UsersProvider } from '../shared/context/users/UsersProvider';
+import { setConfig } from 'cloudinary-build-url';
+
+setConfig({
+  cloudName: 'ai1ds',
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = React.useState(
@@ -22,11 +29,15 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
-        <ChakraProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </ChakraProvider>
+        <UsersProvider>
+          <RoomsProvider>
+            <ChakraProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </ChakraProvider>
+          </RoomsProvider>
+        </UsersProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </Hydrate>
     </QueryClientProvider>

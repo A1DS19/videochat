@@ -6,16 +6,26 @@ import Link from 'next/link';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { LoginModal } from '../auth/login/LoginModal';
 import { SignupModal } from '../auth/signup/SignupModal';
+import { UsersContext } from '../../shared/context/users/UsersProvider';
+import { useMutation } from 'react-query';
+import { logout as logoutRequest } from '../../shared/requests/auth';
 
 interface NavbarProps {}
 
 export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
+  const { isAuth, logout } = React.useContext(UsersContext);
   type whichModal = 'login' | 'signup';
   const [display, changeDisplay] = React.useState('none');
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openModal, setOpenModal] = React.useState<whichModal>();
   const isDark = colorMode === 'dark';
+
+  const { mutate: logoutMutation } = useMutation(logoutRequest, {
+    onSuccess: () => {
+      logout();
+    },
+  });
 
   const handleModal = (type: whichModal): void => {
     if (type === 'login') {
@@ -28,6 +38,34 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
     onOpen();
   };
 
+  const renderIsNotAuthLinks = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('login')}>
+          Login
+        </Button>
+
+        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('signup')}>
+          Signup
+        </Button>
+      </React.Fragment>
+    );
+  };
+
+  const renderIsAuthLinks = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        <Button my={5} px={6} w={'100%'} mx={1} onClick={() => handleModal('login')}>
+          My Rooms
+        </Button>
+
+        <Button my={5} w={'100%'} mx={1} onClick={async () => await logoutMutation()}>
+          Logout
+        </Button>
+      </React.Fragment>
+    );
+  };
+
   const renderLinks = (): JSX.Element => {
     return (
       <React.Fragment>
@@ -37,22 +75,11 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
           </Button>
         </Link>
 
-        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('login')}>
-          Login
-        </Button>
-
-        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('signup')}>
-          Signup
-        </Button>
+        {!isAuth ? renderIsNotAuthLinks() : renderIsAuthLinks()}
 
         <Link href='/about' passHref>
           <Button as='a' my={5} w={'100%'} mx={1}>
             About
-          </Button>
-        </Link>
-        <Link href='/contact' passHref>
-          <Button as='a' my={5} w={'100%'} mx={1}>
-            Contact
           </Button>
         </Link>
       </React.Fragment>

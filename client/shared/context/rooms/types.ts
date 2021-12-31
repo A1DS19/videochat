@@ -1,5 +1,3 @@
-import { api } from './axios';
-
 export type Room = {
   id: number;
   name: string;
@@ -7,7 +5,7 @@ export type Room = {
   creator: Creator;
 };
 
-type Creator = {
+export type Creator = {
   id: number;
   email: string;
   created_at: Date;
@@ -29,14 +27,8 @@ export type RoomTokenDto = {
   uid: number | null;
 };
 
-export const getAllRooms = async (): Promise<Room> => {
-  const { data } = await api.get('/rooms/');
-
-  return data;
-};
-
-export const getRoomToken = async (dto: RoomTokenDto): Promise<RoomTokenRes> => {
-  const { data } = await api.get(`/rooms/token?roomName=${dto.roomName}&uid=${dto.uid}`);
-
-  return data;
+export type RoomsContextState = {
+  rooms: Room[];
+  addRoom: (room: Room) => void;
+  addRooms: (rooms: Room[]) => void;
 };
