@@ -1,16 +1,27 @@
 import React from 'react';
 import type { NextPage } from 'next';
-import { ClientConfig, IAgoraRTCClient, IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
+import {
+  ClientConfig,
+  IAgoraRTCClient,
+  IAgoraRTCRemoteUser,
+  ICameraVideoTrack,
+  ILocalTrack,
+  IMicrophoneAudioTrack,
+} from 'agora-rtc-sdk-ng';
 import { Box } from '@chakra-ui/react';
 import { Controls } from './Controls';
 import { VideoList } from './VideoList';
-import { createClient, createMicrophoneAndCameraTracks } from 'agora-rtc-react';
+import {
+  createClient,
+  createCameraVideoTrack,
+  createMicrophoneAudioTrack,
+} from 'agora-rtc-react';
 
 interface VideoCallProps {
   setInCall: React.Dispatch<React.SetStateAction<boolean>>;
   roomName: string;
   token: string;
-  uid: string;
+  uid: number;
 }
 
 export let config: ClientConfig & { appId: string; token: string };
@@ -23,10 +34,9 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   token,
   uid,
 }): JSX.Element => {
+  const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
-
-  const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
 
   config = {
     mode: 'rtc',
@@ -34,11 +44,24 @@ export const VideoCall: NextPage<VideoCallProps> = ({
     appId: appID,
     token: token,
   };
+
   useClient = createClient(config);
   const client = useClient();
 
-  useMicroPhoneAndCameraTracks = createMicrophoneAndCameraTracks();
-  const { ready, tracks } = useMicroPhoneAndCameraTracks();
+  //  useMicroPhoneAndCameraTracks = createMicrophoneAndCameraTracks();
+  //  const { ready, tracks } = useMicroPhoneAndCameraTracks();
+
+  const useMicrophoneTrack = createMicrophoneAudioTrack();
+  const useCameraTrack = createCameraVideoTrack();
+
+  const localAudioTrack = useMicrophoneTrack();
+  const localVideoTrack = useCameraTrack();
+
+  const { ready: micReady, track: micTrack } = localAudioTrack;
+  const { ready: camReady, track: camTrack } = localVideoTrack;
+
+  const ready = micReady || camReady || (micReady && camReady);
+  const tracks = [micTrack, camTrack];
 
   React.useEffect(() => {
     let init = async (channelName: string) => {
@@ -51,11 +74,16 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 
         if (mediaType === 'audio') {
           user.audioTrack?.play();
+          setUsers((prevUsers) => [...prevUsers, user]);
         }
       });
 
       client.on('user-unpublished', (user, mediaType) => {
         if (mediaType === 'audio') {
+          setUsers((prevUsers) =>
+            prevUsers.filter((prev_user) => prev_user.uid !== user.uid)
+          );
+
           if (user.audioTrack) {
             user.audioTrack.stop();
           }
@@ -76,38 +104,52 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 
       try {
         await client.join(appID, channelName, token, uid);
-
-        if (tracks) {
-          await client.publish([tracks[0], tracks[1]]);
-        }
-
-        setStart(true);
       } catch (err) {
-        console.log(err);
+        console.error('JOIN ERROR', err);
       }
+
+      if (tracks) {
+        await client.publish(
+          ((micTrack && micTrack) as ILocalTrack) ||
+            ((camTrack && camTrack) as ILocalTrack) ||
+            (micTrack && camTrack && ([micTrack, camTrack] as ILocalTrack[]))
+        );
+      }
+
+      setStart(true);
     };
 
     if (ready && tracks) {
       try {
         init(roomName);
       } catch (err) {
-        console.log(err);
+        console.error('INIT ERROR', err);
       }
     }
-  }, [client, ready, tracks, roomName, token, appID, uid]);
+  }, [roomName, client, ready, tracks]);
 
   return (
     <React.Fragment>
       <Box maxWidth={'30%'}>
         {ready && tracks && (
           <React.Fragment>
-            <Controls setInCall={setInCall} setStart={setStart} tracks={tracks} />
+            <Controls
+              setInCall={setInCall}
+              setStart={setStart}
+              tracks={[micTrack, camTrack]}
+              client={client}
+            />
           </React.Fragment>
         )}
 
         {start && tracks && (
           <React.Fragment>
-            <VideoList setInCall={setInCall} tracks={tracks} users={users} />
+            <VideoList
+              setInCall={setInCall}
+              tracks={[micTrack, camTrack]}
+              users={users}
+              localUID={uid}
+            />
           </React.Fragment>
         )}
       </Box>

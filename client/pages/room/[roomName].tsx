@@ -3,6 +3,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { getRoomToken } from '../../shared/context/rooms/rooms';
 import { useMutation } from 'react-query';
+import { UsersContext } from '../../shared/context/users/UsersProvider';
 
 const DynamicVideoCall = dynamic(() => import('../../components/video/VideoCall'), {
   ssr: false,
@@ -13,12 +14,13 @@ const RoomPage = (): JSX.Element => {
   const [inCall, setInCall] = React.useState<boolean>(false);
   const roomName = router.query.roomName as string;
   const [token, setToken] = React.useState<string | null>(null);
-  const [uid, setUid] = React.useState<string | null>(null);
+  const [uid, setUid] = React.useState<number | null>(null);
+  const { currentUser } = React.useContext(UsersContext);
 
   const { isLoading, mutate } = useMutation(getRoomToken, {
     onSuccess: (data) => {
       setToken(data.token);
-      setUid(data.uid.toString());
+      setUid(data.uid);
       setInCall(true);
     },
     onError: () => {
@@ -32,7 +34,7 @@ const RoomPage = (): JSX.Element => {
     }
 
     async function getCredentials() {
-      mutate({ roomName, uid: null });
+      mutate({ roomName, uid: currentUser?.id ? currentUser.id : null });
     }
 
     getCredentials();
@@ -50,7 +52,7 @@ const RoomPage = (): JSX.Element => {
           setInCall={setInCall}
           roomName={roomName && roomName}
           token={token! && token.replaceAll(' ', '+')}
-          uid={uid! && uid}
+          uid={currentUser?.id ? currentUser.id : (uid as number)}
         />
       )}
     </React.Fragment>

@@ -7,19 +7,31 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { LoginModal } from '../auth/login/LoginModal';
 import { SignupModal } from '../auth/signup/SignupModal';
 import { UsersContext } from '../../shared/context/users/UsersProvider';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { logout as logoutRequest } from '../../shared/requests/auth';
+import { me } from '../../shared/context/users/users';
 
 interface NavbarProps {}
 
 export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
-  const { isAuth, logout } = React.useContext(UsersContext);
+  const { isAuth, logout, addUser, currentUser } = React.useContext(UsersContext);
   type whichModal = 'login' | 'signup';
   const [display, changeDisplay] = React.useState('none');
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openModal, setOpenModal] = React.useState<whichModal>();
   const isDark = colorMode === 'dark';
+  const isUserLoggedIn = React.useCallback(async () => {
+    const isUser = localStorage.getItem('access_token');
+    if (isUser) {
+      const data = await me();
+      if (data) addUser(data);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    isUserLoggedIn();
+  }, []);
 
   const { mutate: logoutMutation } = useMutation(logoutRequest, {
     onSuccess: () => {
