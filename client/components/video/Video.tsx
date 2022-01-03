@@ -1,6 +1,7 @@
 import React from 'react';
 import type { NextPage } from 'next';
 import { AgoraVideoPlayer, IRemoteVideoTrack } from 'agora-rtc-react';
+import { Text } from '@chakra-ui/react';
 
 interface VideoProps {
   videoTrack: IRemoteVideoTrack;

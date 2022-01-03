@@ -4,7 +4,6 @@ import {
   IMicrophoneAudioTrack,
   ICameraVideoTrack,
   IAgoraRTCClient,
-  IAgoraRTCRemoteUser,
 } from 'agora-rtc-react';
 import { Button, SimpleGrid } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
@@ -73,18 +72,24 @@ export const Controls: NextPage<ControlsProps> = ({
   return (
     <React.Fragment>
       <SimpleGrid columns={3} spacing={1}>
-        <Button
-          colorScheme={button_on_off('audio')}
-          onClick={async () => await mute('audio')}
-        >
-          MIC
-        </Button>
-        <Button
-          colorScheme={button_on_off('video')}
-          onClick={async () => await mute('video')}
-        >
-          VIDEO
-        </Button>
+        {tracks[0] && (
+          <Button
+            colorScheme={button_on_off('audio')}
+            onClick={async () => await mute('audio')}
+          >
+            MIC
+          </Button>
+        )}
+
+        {tracks[1] && (
+          <Button
+            colorScheme={button_on_off('video')}
+            onClick={async () => await mute('video')}
+          >
+            VIDEO
+          </Button>
+        )}
+
         <Button
           onClick={async () => {
             await leaveChannel();

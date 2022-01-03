@@ -61,7 +61,10 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   const { ready: camReady, track: camTrack } = localVideoTrack;
 
   const ready = micReady || camReady || (micReady && camReady);
-  const tracks = [micTrack, camTrack];
+  const tracks =
+    (micTrack && micTrack) ||
+    (camTrack && camTrack) ||
+    (micTrack && camTrack && ([micTrack, camTrack] as ILocalTrack[]));
 
   React.useEffect(() => {
     let init = async (channelName: string) => {
@@ -108,15 +111,14 @@ export const VideoCall: NextPage<VideoCallProps> = ({
         console.error('JOIN ERROR', err);
       }
 
-      if (tracks) {
-        await client.publish(
-          ((micTrack && micTrack) as ILocalTrack) ||
-            ((camTrack && camTrack) as ILocalTrack) ||
-            (micTrack && camTrack && ([micTrack, camTrack] as ILocalTrack[]))
-        );
+      try {
+        if (tracks) {
+          await client.publish(tracks);
+          setStart(true);
+        }
+      } catch (error) {
+        console.error('PUBLISH ERROR', error);
       }
-
-      setStart(true);
     };
 
     if (ready && tracks) {
