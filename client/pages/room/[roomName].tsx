@@ -47,11 +47,11 @@ const RoomPage = (): JSX.Element => {
   return (
     <React.Fragment>
       <h1>Welcome to room {roomName}</h1>
-      {inCall && (
+      {inCall && token && roomName && (
         <DynamicVideoCall
           setInCall={setInCall}
-          roomName={roomName && roomName}
-          token={token! && token.replaceAll(' ', '+')}
+          roomName={roomName}
+          token={token.replaceAll(' ', '+')}
           uid={currentUser?.id ? currentUser.id : (uid as number)}
         />
       )}

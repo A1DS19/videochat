@@ -36,14 +36,10 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
-  // const [ready, setReady] = React.useState(false);
-  // const [tracks, setTracks] = React.useState<ILocalTrack | null | ILocalTrack[]>(null);
-  // const [micTrack, setMicTrack] = React.useState<IMicrophoneAudioTrack | null>(null);
-  // const [camTrack, setCamTrack] = React.useState<ICameraVideoTrack | null>(null);
 
   config = {
     mode: 'rtc',
-    codec: 'vp8',
+    codec: 'h264',
     appId: appID,
     token: token,
   };
@@ -51,45 +47,32 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   useClient = createClient(config);
   const client = useClient();
 
-  const useCameraTrack = createCameraVideoTrack();
-  const useMicrophoneTrack = createMicrophoneAudioTrack();
-
-  const localAudioTrack = useMicrophoneTrack();
-  const localVideoTrack = useCameraTrack();
-
-  const { ready: micReady, track: micTrack } = localAudioTrack;
-  const { ready: camReady, track: camTrack } = localVideoTrack;
+  const { ready: micReady, track: micTrack } = createMicrophoneAudioTrack()();
+  const { ready: camReady, track: camTrack } = createCameraVideoTrack()();
 
   const ready = micReady || camReady || (micReady && camReady);
   const tracks =
-    ((micTrack && micTrack) as ILocalTrack) ||
-    ((camTrack && camTrack) as ILocalTrack) ||
+    ((micTrack && [micTrack]) as ILocalTrack[]) ||
+    ((camTrack && [camTrack]) as ILocalTrack[]) ||
     (micTrack && camTrack && ([micTrack, camTrack] as ILocalTrack[]));
 
   const init = async (channelName: string): Promise<void> => {
     client.on('user-published', async (user, mediaType) => {
       await client.subscribe(user, mediaType);
 
-      console.log(user, mediaType);
-
       if (mediaType === 'video') {
-        setUsers((prevUsers) => [...prevUsers, { ...user, hasVideo: true }]);
+        setUsers((prevUsers) => [...prevUsers, user]);
       }
 
       if (mediaType === 'audio') {
         user.audioTrack?.play();
-        setUsers((prevUsers) => [
-          ...prevUsers,
-          { ...user, hasAudio: true, hasVideo: false },
-        ]);
+        setUsers((prevUsers) => [...prevUsers, user]);
       }
     });
 
     client.on('user-unpublished', (user, mediaType) => {
       if (mediaType === 'audio') {
-        if (user.audioTrack) {
-          user.audioTrack.stop();
-        }
+        if (user.audioTrack) user.audioTrack.stop();
 
         setUsers((prevUsers) =>
           prevUsers.filter((prev_user) => prev_user.uid !== user.uid)
@@ -110,32 +93,27 @@ export const VideoCall: NextPage<VideoCallProps> = ({
     });
 
     try {
-      await client.join(appID, channelName, token, uid);
+      await client.join(config.appId, channelName, config.token, uid);
     } catch (err) {
       console.error('JOIN ERROR', err);
     }
 
-    try {
-      if (tracks) {
-        await client.publish(tracks);
-        setStart(true);
-      }
-    } catch (error) {
-      console.error('PUBLISH ERROR', error);
-    }
+    if (tracks) await client.publish(tracks);
+
+    setStart(true);
   };
 
   React.useEffect(() => {
     if (ready && tracks) {
       try {
         (async () => {
-          init(roomName);
+          await init(roomName);
         })();
       } catch (err) {
         console.error('INIT ERROR', err);
       }
     }
-  }, [roomName, client, ready, tracks, users]);
+  }, [roomName, client, ready, tracks]);
 
   return (
     <React.Fragment>
