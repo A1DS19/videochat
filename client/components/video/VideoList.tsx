@@ -7,7 +7,7 @@ import {
   IMicrophoneAudioTrack,
 } from 'agora-rtc-react';
 import { Video } from './Video';
-import { Box, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 
 interface VideoListProps {
   tracks: [IMicrophoneAudioTrack | null, ICameraVideoTrack | null];
@@ -16,11 +16,7 @@ interface VideoListProps {
   localUID: number;
 }
 
-export const VideoList: NextPage<VideoListProps> = ({
-  users,
-  tracks,
-  localUID,
-}): JSX.Element => {
+export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Element => {
   const renderNoVideo = (): JSX.Element => {
     return (
       <React.Fragment>
@@ -35,17 +31,11 @@ export const VideoList: NextPage<VideoListProps> = ({
     return (
       users &&
       users.map((user) => {
-        console.log(user);
-
         if (user.hasVideo) {
           return <Video key={user.uid} videoTrack={user.videoTrack!} />;
         }
 
-        if (user.hasAudio && !user.hasVideo) {
-          return renderNoVideo();
-        }
-
-        return null;
+        return renderNoVideo();
       })
     );
   };
