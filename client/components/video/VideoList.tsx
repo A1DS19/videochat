@@ -16,7 +16,11 @@ interface VideoListProps {
   localUID: number;
 }
 
-export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Element => {
+export const VideoList: NextPage<VideoListProps> = ({
+  users,
+  tracks,
+  localUID,
+}): JSX.Element => {
   const renderNoVideo = (): JSX.Element => {
     return (
       <React.Fragment>
@@ -29,16 +33,20 @@ export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Elem
 
   const renderVideos = (): false | (JSX.Element | null)[] => {
     return (
-      users &&
-      users.map((user) => {
-        if (user.hasVideo) {
-          return <Video key={user.uid} videoTrack={user.videoTrack!} />;
-        }
+      users.length > 0 &&
+      users
+        .filter((user) => user.uid !== localUID)
+        .map((user) => {
+          if (user.hasVideo && user.videoTrack) {
+            return <Video key={user.uid} videoTrack={user.videoTrack} />;
+          }
 
-        return renderNoVideo();
-      })
+          return renderNoVideo();
+        })
     );
   };
+
+  console.log(users);
 
   return (
     <React.Fragment>
@@ -48,7 +56,6 @@ export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Elem
         ) : (
           renderNoVideo()
         )}
-
         {renderVideos()}
       </Box>
     </React.Fragment>

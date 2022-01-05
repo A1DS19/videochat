@@ -4,9 +4,7 @@ import {
   ClientConfig,
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
-  ICameraVideoTrack,
   ILocalTrack,
-  IMicrophoneAudioTrack,
 } from 'agora-rtc-sdk-ng';
 import { Box } from '@chakra-ui/react';
 import { Controls } from './Controls';
@@ -24,7 +22,7 @@ interface VideoCallProps {
   uid: number;
 }
 
-export let config: ClientConfig & { appId: string; token: string };
+export let config: ClientConfig;
 export let useClient: () => IAgoraRTCClient;
 
 export const VideoCall: NextPage<VideoCallProps> = ({
@@ -39,9 +37,7 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 
   config = {
     mode: 'rtc',
-    codec: 'h264',
-    appId: appID,
-    token: token,
+    codec: 'vp8',
   };
 
   useClient = createClient(config);
@@ -51,10 +47,19 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   const { ready: camReady, track: camTrack } = createCameraVideoTrack()();
 
   const ready = micReady || camReady || (micReady && camReady);
-  const tracks =
-    ((micTrack && [micTrack]) as ILocalTrack[]) ||
-    ((camTrack && [camTrack]) as ILocalTrack[]) ||
-    (micTrack && camTrack && ([micTrack, camTrack] as ILocalTrack[]));
+  let tracks: ILocalTrack | ILocalTrack[] = [];
+
+  if (camTrack && !micTrack) {
+    tracks = camTrack;
+  }
+
+  if (micTrack && !camTrack) {
+    tracks = micTrack;
+  }
+
+  if (micTrack && camTrack) {
+    tracks = [micTrack, camTrack];
+  }
 
   const init = async (channelName: string): Promise<void> => {
     client.on('user-published', async (user, mediaType) => {
@@ -72,46 +77,27 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 
     client.on('user-unpublished', (user, mediaType) => {
       if (mediaType === 'audio') {
-        if (user.audioTrack) user.audioTrack.stop();
-
-        setUsers((prevUsers) =>
-          prevUsers.filter((prev_user) => prev_user.uid !== user.uid)
-        );
+        user.audioTrack?.stop();
+        setUsers((prevUsers) => prevUsers.filter((User) => User.uid !== user.uid));
       }
 
       if (mediaType === 'video') {
-        setUsers((prevUsers) =>
-          prevUsers.filter((prev_user) => prev_user.uid !== user.uid)
-        );
+        setUsers((prevUsers) => prevUsers.filter((User) => User.uid !== user.uid));
       }
     });
 
     client.on('user-left', (user) => {
-      setUsers((prevUsers) =>
-        prevUsers.filter((prev_user) => prev_user.uid !== user.uid)
-      );
+      setUsers((prevUsers) => prevUsers.filter((User) => User.uid !== user.uid));
     });
 
-    try {
-      await client.join(config.appId, channelName, config.token, uid);
-    } catch (err) {
-      console.error('JOIN ERROR', err);
-    }
-
+    await client.join(appID, channelName, token, uid);
     if (tracks) await client.publish(tracks);
-
     setStart(true);
   };
 
   React.useEffect(() => {
     if (ready && tracks) {
-      try {
-        (async () => {
-          await init(roomName);
-        })();
-      } catch (err) {
-        console.error('INIT ERROR', err);
-      }
+      init(roomName);
     }
   }, [roomName, client, ready, tracks]);
 
