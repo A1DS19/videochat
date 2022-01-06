@@ -4,7 +4,9 @@ import {
   ClientConfig,
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
+  ICameraVideoTrack,
   ILocalTrack,
+  IMicrophoneAudioTrack,
 } from 'agora-rtc-sdk-ng';
 import { Box } from '@chakra-ui/react';
 import { Controls } from './Controls';
@@ -13,6 +15,7 @@ import {
   createClient,
   createCameraVideoTrack,
   createMicrophoneAudioTrack,
+  createMicrophoneAndCameraTracks,
 } from 'agora-rtc-react';
 
 interface VideoCallProps {
@@ -43,8 +46,18 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   useClient = createClient(config);
   const client = useClient();
 
-  const { ready: micReady, track: micTrack } = createMicrophoneAudioTrack()();
-  const { ready: camReady, track: camTrack } = createCameraVideoTrack()();
+  const useMicTrack = async () => {
+    return await createMicrophoneAudioTrack()();
+  };
+
+  const useCamTrack = async () => {
+    return await createCameraVideoTrack()();
+  };
+
+  //crear state
+  //asignar en .then datos a el state
+  const { ready: micReady, track: micTrack, error: micError } = useMicTrack();
+  const { ready: camReady, track: camTrack, error: camError } = useCamTrack();
 
   const ready = micReady || camReady || (micReady && camReady);
   let tracks: ILocalTrack | ILocalTrack[] = [];
@@ -60,6 +73,8 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   if (micTrack && camTrack) {
     tracks = [micTrack, camTrack];
   }
+
+  // const { ready, tracks, error } = createMicrophoneAndCameraTracks()();
 
   const init = async (channelName: string): Promise<void> => {
     client.on('user-published', async (user, mediaType) => {
@@ -78,7 +93,6 @@ export const VideoCall: NextPage<VideoCallProps> = ({
     client.on('user-unpublished', (user, mediaType) => {
       if (mediaType === 'audio') {
         user.audioTrack?.stop();
-        setUsers((prevUsers) => prevUsers.filter((User) => User.uid !== user.uid));
       }
 
       if (mediaType === 'video') {
@@ -98,6 +112,7 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   React.useEffect(() => {
     if (ready && tracks) {
       init(roomName);
+      console.info(tracks);
     }
   }, [roomName, client, ready, tracks]);
 
