@@ -1,28 +1,27 @@
 import React from 'react';
 import type { NextPage } from 'next';
-import {
-  ClientConfig,
-  IAgoraRTCClient,
-  IAgoraRTCRemoteUser,
-  ICameraVideoTrack,
-  ILocalTrack,
-  IMicrophoneAudioTrack,
-} from 'agora-rtc-sdk-ng';
 import { Box } from '@chakra-ui/react';
 import { Controls } from './Controls';
 import { VideoList } from './VideoList';
 import {
   createClient,
-  createCameraVideoTrack,
   createMicrophoneAudioTrack,
-  createMicrophoneAndCameraTracks,
+  createCameraVideoTrack,
 } from 'agora-rtc-react';
+import {
+  ClientConfig,
+  IAgoraRTCClient,
+  IAgoraRTCRemoteUser,
+  ILocalTrack,
+} from 'agora-rtc-sdk-ng';
+import { CallType } from '../../pages/room/[roomName]';
 
 interface VideoCallProps {
   setInCall: React.Dispatch<React.SetStateAction<boolean>>;
   roomName: string;
   token: string;
   uid: number;
+  callType: CallType;
 }
 
 export let config: ClientConfig;
@@ -33,6 +32,7 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   roomName,
   token,
   uid,
+  callType,
 }): JSX.Element => {
   const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
@@ -46,18 +46,8 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   useClient = createClient(config);
   const client = useClient();
 
-  const useMicTrack = async () => {
-    return await createMicrophoneAudioTrack()();
-  };
-
-  const useCamTrack = async () => {
-    return await createCameraVideoTrack()();
-  };
-
-  //crear state
-  //asignar en .then datos a el state
-  const { ready: micReady, track: micTrack, error: micError } = useMicTrack();
-  const { ready: camReady, track: camTrack, error: camError } = useCamTrack();
+  const { ready: camReady, track: camTrack } = createCameraVideoTrack()();
+  const { ready: micReady, track: micTrack } = createMicrophoneAudioTrack()();
 
   const ready = micReady || camReady || (micReady && camReady);
   let tracks: ILocalTrack | ILocalTrack[] = [];
