@@ -7,12 +7,16 @@ import {
   createClient,
   createMicrophoneAudioTrack,
   createCameraVideoTrack,
+  createMicrophoneAndCameraTracks,
 } from 'agora-rtc-react';
 import {
   ClientConfig,
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
+  ICameraVideoTrack,
   ILocalTrack,
+  IMicrophoneAudioTrack,
+  UID,
 } from 'agora-rtc-sdk-ng';
 import { CallType } from '../../pages/room/[roomName]';
 
@@ -26,6 +30,10 @@ interface VideoCallProps {
 
 export let config: ClientConfig;
 export let useClient: () => IAgoraRTCClient;
+export type UserSpeakingType = {
+  level: number;
+  uid: UID;
+};
 
 export const VideoCall: NextPage<VideoCallProps> = ({
   setInCall,
@@ -37,6 +45,18 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
+  const [userSpeaking, setUserSpeaking] = React.useState<UserSpeakingType | null>(null);
+  //const [ready, setReady] = React.useState<boolean>(false);
+  // const [tracks, setTracks] = React.useState<{
+  //   type: CallType | null;
+  //   tracks:
+  //     | [IMicrophoneAudioTrack, ICameraVideoTrack]
+  //     | null
+  //     | IMicrophoneAudioTrack
+  //     | null
+  //     | ICameraVideoTrack
+  //     | null;
+  // }>({ type: null, tracks: null });
 
   config = {
     mode: 'rtc',
@@ -45,38 +65,60 @@ export const VideoCall: NextPage<VideoCallProps> = ({
 
   useClient = createClient(config);
   const client = useClient();
+  let tracks: {
+    type: CallType | null;
+    tracks:
+      | [IMicrophoneAudioTrack, ICameraVideoTrack]
+      | null
+      | IMicrophoneAudioTrack
+      | null
+      | ICameraVideoTrack
+      | null;
+  } = { tracks: null, type: null };
+  let ready: boolean = false;
 
-  const { ready: camReady, track: camTrack } = createCameraVideoTrack()();
-  const { ready: micReady, track: micTrack } = createMicrophoneAudioTrack()();
-
-  const ready = micReady || camReady || (micReady && camReady);
-  let tracks: ILocalTrack | ILocalTrack[] = [];
-
-  if (camTrack && !micTrack) {
-    tracks = camTrack;
+  if (callType === 'audio') {
+    const { ready: audioReady, track } = createMicrophoneAudioTrack()();
+    ready = audioReady;
+    tracks = { type: 'audio', tracks: track };
   }
 
-  if (micTrack && !camTrack) {
-    tracks = micTrack;
+  if (callType === 'video') {
+    const { ready: videoReady, track } = createCameraVideoTrack()();
+    ready = videoReady;
+    tracks = { type: 'video', tracks: track };
   }
 
-  if (micTrack && camTrack) {
-    tracks = [micTrack, camTrack];
+  if (callType === 'audio_video') {
+    const { ready: audioVideoReady, tracks: audioVideoTracks } =
+      createMicrophoneAndCameraTracks()();
+    ready = audioVideoReady;
+    tracks = { type: 'audio_video', tracks: audioVideoTracks };
   }
-
-  // const { ready, tracks, error } = createMicrophoneAndCameraTracks()();
 
   const init = async (channelName: string): Promise<void> => {
     client.on('user-published', async (user, mediaType) => {
       await client.subscribe(user, mediaType);
 
       if (mediaType === 'video') {
-        setUsers((prevUsers) => [...prevUsers, user]);
+        setUsers((prevUsers) => {
+          if (!prevUsers.find((User) => User.uid === user.uid)) {
+            return [...prevUsers, user];
+          }
+
+          return prevUsers;
+        });
       }
 
       if (mediaType === 'audio') {
         user.audioTrack?.play();
-        setUsers((prevUsers) => [...prevUsers, user]);
+        setUsers((prevUsers) => {
+          if (!prevUsers.find((User) => User.uid === user.uid)) {
+            return [...prevUsers, user];
+          }
+
+          return prevUsers;
+        });
       }
     });
 
@@ -94,39 +136,74 @@ export const VideoCall: NextPage<VideoCallProps> = ({
       setUsers((prevUsers) => prevUsers.filter((User) => User.uid !== user.uid));
     });
 
+    client.enableAudioVolumeIndicator();
+    client.on('volume-indicator', (volumes) => {
+      volumes.forEach((volume) => {
+        //yo
+        if (uid == volume.uid && volume.level > 5) {
+          setUserSpeaking(volume);
+        }
+
+        if (uid == volume.uid && volume.level < 5) {
+          setUserSpeaking(null);
+        }
+
+        //peers
+        if (uid != volume.uid && volume.level > 5) {
+          setUserSpeaking(volume);
+        }
+
+        if (uid != volume.uid && volume.level < 5) {
+          setUserSpeaking(null);
+        }
+      });
+    });
+
     await client.join(appID, channelName, token, uid);
-    if (tracks) await client.publish(tracks);
+    if (tracks.tracks) await client.publish(tracks.tracks);
     setStart(true);
   };
 
   React.useEffect(() => {
-    if (ready && tracks) {
+    if (ready && tracks.tracks) {
       init(roomName);
-      console.info(tracks);
     }
-  }, [roomName, client, ready, tracks]);
+  }, [roomName, client, ready, tracks.tracks]);
 
   return (
     <React.Fragment>
       <Box maxWidth={'30%'}>
-        {ready && tracks && (
+        {ready && tracks.tracks && (
           <React.Fragment>
             <Controls
               setInCall={setInCall}
               setStart={setStart}
-              tracks={[micTrack, camTrack]}
+              tracks={
+                tracks.type === 'audio'
+                  ? [tracks.tracks, null]
+                  : tracks.type === 'video'
+                  ? [null, tracks.tracks]
+                  : tracks.type === 'audio_video' && (tracks.tracks as any)
+              }
               client={client}
             />
           </React.Fragment>
         )}
 
-        {start && tracks && (
+        {start && tracks.tracks && (
           <React.Fragment>
             <VideoList
               setInCall={setInCall}
-              tracks={[micTrack, camTrack]}
+              tracks={
+                tracks.type === 'audio'
+                  ? [tracks.tracks, null]
+                  : tracks.type === 'video'
+                  ? [null, tracks.tracks]
+                  : tracks.type === 'audio_video' && (tracks.tracks as any)
+              }
               users={users}
               localUID={uid}
+              userSpeaking={userSpeaking}
             />
           </React.Fragment>
         )}

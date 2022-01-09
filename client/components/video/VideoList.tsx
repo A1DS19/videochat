@@ -7,21 +7,41 @@ import {
   IMicrophoneAudioTrack,
 } from 'agora-rtc-react';
 import { Video } from './Video';
-import { Box } from '@chakra-ui/react';
+import { Box, Grid, Text } from '@chakra-ui/react';
+import { UserSpeakingType } from './VideoCall';
 
 interface VideoListProps {
-  tracks: [IMicrophoneAudioTrack | null, ICameraVideoTrack | null];
+  tracks:
+    | [IMicrophoneAudioTrack | null, ICameraVideoTrack | null]
+    | [IMicrophoneAudioTrack, ICameraVideoTrack]
+    | null;
   users: IAgoraRTCRemoteUser[];
   setInCall: React.Dispatch<React.SetStateAction<boolean>>;
   localUID: number;
+  userSpeaking: UserSpeakingType | null;
 }
 
-export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Element => {
-  const renderNoVideo = (): JSX.Element => {
+export const VideoList: NextPage<VideoListProps> = ({
+  users,
+  tracks,
+  userSpeaking,
+  localUID,
+}): JSX.Element => {
+  const renderNoVideo = (user?: IAgoraRTCRemoteUser): JSX.Element => {
     return (
       <React.Fragment>
-        <Box color={'white'} backgroundColor={'black'} height={'200px'} width={'200px'}>
-          no video
+        <Box
+          color={'white'}
+          backgroundColor={'black'}
+          className={`video ${
+            (user?.uid === userSpeaking?.uid ||
+              localUID === parseInt(userSpeaking?.uid as string)) &&
+            'user-speaking'
+          }`}
+        >
+          <Text textAlign={'center'} fontSize={'xl'}>
+            no video
+          </Text>
         </Box>
       </React.Fragment>
     );
@@ -32,26 +52,42 @@ export const VideoList: NextPage<VideoListProps> = ({ users, tracks }): JSX.Elem
       users.length > 0 &&
       users.map((user) => {
         if (user.hasVideo && user.videoTrack) {
-          return <Video key={user.uid} videoTrack={user.videoTrack} />;
+          return (
+            <Video
+              key={user.uid}
+              userSpeaking={userSpeaking}
+              user={user}
+              videoTrack={user.videoTrack}
+            />
+          );
         }
 
-        return renderNoVideo();
+        return renderNoVideo(user);
       })
     );
   };
 
-  console.info(users);
-
   return (
     <React.Fragment>
-      <Box className='videos'>
-        {tracks[1] ? (
-          <AgoraVideoPlayer className='video' videoTrack={tracks[1]} />
+      <Grid
+        height={'50vh'}
+        width={'70vw'}
+        padding={'2rem'}
+        templateColumns={'repeat(3, 1fr)'}
+        gap={1}
+      >
+        {tracks![1] ? (
+          <AgoraVideoPlayer
+            className={`video ${
+              localUID === parseInt(userSpeaking?.uid as string) && 'user-speaking'
+            }`}
+            videoTrack={tracks![1]}
+          />
         ) : (
           renderNoVideo()
         )}
         {renderVideos()}
-      </Box>
+      </Grid>
     </React.Fragment>
   );
 };

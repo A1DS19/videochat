@@ -59,34 +59,34 @@ export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
       setCallType('video');
     }
 
+    if (mediaType === 'audio_video') {
+      setCallType('audio_video');
+    }
+
     onClose();
   };
 
   const renderDevicesJoinButtons = (): JSX.Element => {
-    if (audioDevices.length > 0) {
+    if (audioDevices && !videoDevices) {
       return (
-        <Button colorScheme='blue' mr={3} onClick={() => handleSelectMediaType('audio')}>
+        <Button colorScheme='blue' onClick={() => handleSelectMediaType('audio')}>
           Audio
         </Button>
       );
     }
 
-    if (videoDevices.length > 0) {
+    if (videoDevices && !audioDevices) {
       return (
-        <Button colorScheme='blue' mr={3} onClick={() => handleSelectMediaType('video')}>
+        <Button colorScheme='blue' onClick={() => handleSelectMediaType('video')}>
           Video
         </Button>
       );
     }
 
-    if (audioDevices.length > 0 && videoDevices.length > 0) {
+    if (audioDevices && videoDevices) {
       return (
         <React.Fragment>
-          <Button
-            colorScheme='blue'
-            mr={3}
-            onClick={() => handleSelectMediaType('audio_video')}
-          >
+          <Button colorScheme='blue' onClick={() => handleSelectMediaType('audio_video')}>
             Audio and Video
           </Button>
         </React.Fragment>
@@ -105,11 +105,11 @@ export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
 
   return (
     <React.Fragment>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Joining room {roomName}</ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton onClick={() => router.push('/')} />
           <ModalBody>How do you want to connect to the call?</ModalBody>
           <ModalFooter>{renderDevicesJoinButtons()}</ModalFooter>
         </ModalContent>

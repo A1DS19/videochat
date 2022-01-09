@@ -45,15 +45,20 @@ const RoomPage = (): JSX.Element => {
     }
 
     getCredentials();
+
+    window.onbeforeunload = function (e) {
+      e.preventDefault();
+      e.returnValue =
+        'Are you sure you want to leave, you will be disconnected from the call';
+    };
   }, [roomName, router, mutate]);
 
   if (isLoading) {
-    return <div>loading</div>;
+    return <></>;
   }
 
   return (
     <React.Fragment>
-      <h1>Welcome to room {roomName}</h1>
       <JoinRoomModal
         isOpen={isOpen}
         onClose={onClose}
@@ -61,14 +66,17 @@ const RoomPage = (): JSX.Element => {
         setCallType={setCallType}
         roomName={roomName}
       />
-      {inCall && token && roomName && callType && (
-        <DynamicVideoCall
-          setInCall={setInCall}
-          roomName={roomName}
-          token={token.replaceAll(' ', '+')}
-          uid={currentUser?.id ? currentUser.id : (uid as number)}
-          callType={callType}
-        />
+      {inCall && token && roomName && callType && !isLoading && (
+        <React.Fragment>
+          <h1>Welcome to room {roomName}</h1>
+          <DynamicVideoCall
+            setInCall={setInCall}
+            roomName={roomName}
+            token={token.replaceAll(' ', '+')}
+            uid={currentUser?.id ? currentUser.id : (uid as number)}
+            callType={callType}
+          />
+        </React.Fragment>
       )}
     </React.Fragment>
   );

@@ -1,21 +1,24 @@
-.videos {
-  position: relative;
+/* .videos {
   height: 85vh;
   width: 100vw;
   margin: auto;
-  align-self: flex-start;
+  padding: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-  justify-items: center;
-  align-items: center;
-}
+  grid-template-columns: repeat(4, minmax(500px, 1fr));
+} */
 
 .video {
-  position: relative;
   background-color: black;
-  height: 95%;
-  width: 95%;
-  border-width: 1px;
-  border-color: #38373a;
+  height: 100%;
+  width: 100%;
+  border: 2px;
+  margin: 0 5px;
+  border-color: black;
+  border-style: solid;
+}
+
+.user-speaking {
+  border: 3px;
+  border-color: #38a169;
   border-style: solid;
 }
