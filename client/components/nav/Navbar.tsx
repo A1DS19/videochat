@@ -7,15 +7,15 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { LoginModal } from '../auth/login/LoginModal';
 import { SignupModal } from '../auth/signup/SignupModal';
 import { UsersContext } from '../../shared/context/users/UsersProvider';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { logout as logoutRequest } from '../../shared/requests/auth';
 import { me } from '../../shared/context/users/users';
 
 interface NavbarProps {}
+export type whichModal = 'login' | 'signup';
 
 export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
-  const { isAuth, logout, addUser, currentUser } = React.useContext(UsersContext);
-  type whichModal = 'login' | 'signup';
+  const { isAuth, logout, addUser } = React.useContext(UsersContext);
   const [display, changeDisplay] = React.useState('none');
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();

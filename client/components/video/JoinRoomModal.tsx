@@ -28,12 +28,15 @@ interface JoinRoomModalProps {
 export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
   isOpen,
   onClose,
-  onOpen,
   setCallType,
   roomName,
 }): JSX.Element => {
-  const [audioDevices, setAudioDevices] = React.useState<AgoraRTC.MediaDeviceInfo[]>([]);
-  const [videoDevices, setVideoDevices] = React.useState<AgoraRTC.MediaDeviceInfo[]>([]);
+  const [audioDevices, setAudioDevices] = React.useState<
+    AgoraRTC.MediaDeviceInfo[] | null
+  >(null);
+  const [videoDevices, setVideoDevices] = React.useState<
+    AgoraRTC.MediaDeviceInfo[] | null
+  >(null);
   const router = useRouter();
 
   React.useEffect(() => {
@@ -45,8 +48,8 @@ export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
         return device.kind === 'videoinput';
       });
 
-      setAudioDevices(audioDevices);
-      setVideoDevices(videoDevices);
+      setAudioDevices(audioDevices.length > 0 ? audioDevices : null);
+      setVideoDevices(videoDevices.length > 0 ? videoDevices : null);
     });
   }, []);
 
@@ -111,7 +114,9 @@ export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
           <ModalHeader>Joining room {roomName}</ModalHeader>
           <ModalCloseButton onClick={() => router.push('/')} />
           <ModalBody>How do you want to connect to the call?</ModalBody>
-          <ModalFooter>{renderDevicesJoinButtons()}</ModalFooter>
+          <ModalFooter>
+            {(audioDevices || videoDevices) && renderDevicesJoinButtons()}
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </React.Fragment>

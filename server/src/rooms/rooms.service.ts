@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
 import { ENV_CONFIGURATION } from 'config/configuration';
+import { RoomChat } from 'src/room-chat/room-chat.entity';
 import { User } from 'src/users/users.entity';
 import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-channel.dto';
@@ -105,5 +106,15 @@ export class RoomsService {
     }
 
     return rooms;
+  }
+
+  async getRoomByName(roomName: string): Promise<Room> {
+    const room = await this.roomsRepository.findOne({
+      where: { name: roomName },
+    });
+
+    if (!room) throw new NotFoundException('Room does not exist');
+
+    return room;
   }
 }

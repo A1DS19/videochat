@@ -11,3 +11,9 @@ export const getRoomToken = async (dto: RoomTokenDto): Promise<RoomTokenRes> => 
 
   return data;
 };
+
+export const getCurrentRoom = async (roomName: string): Promise<Room> => {
+  const { data } = await api.post(`/rooms/room/${roomName}`);
+
+  return data;
+};

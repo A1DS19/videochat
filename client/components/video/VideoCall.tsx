@@ -14,11 +14,11 @@ import {
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
   ICameraVideoTrack,
-  ILocalTrack,
   IMicrophoneAudioTrack,
   UID,
 } from 'agora-rtc-sdk-ng';
 import { CallType } from '../../pages/room/[roomName]';
+import { ChatIndex } from '../rooms/chat/ChatIndex';
 
 interface VideoCallProps {
   setInCall: React.Dispatch<React.SetStateAction<boolean>>;
@@ -46,17 +46,6 @@ export const VideoCall: NextPage<VideoCallProps> = ({
   const [users, setUsers] = React.useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = React.useState<boolean>(false);
   const [userSpeaking, setUserSpeaking] = React.useState<UserSpeakingType | null>(null);
-  //const [ready, setReady] = React.useState<boolean>(false);
-  // const [tracks, setTracks] = React.useState<{
-  //   type: CallType | null;
-  //   tracks:
-  //     | [IMicrophoneAudioTrack, ICameraVideoTrack]
-  //     | null
-  //     | IMicrophoneAudioTrack
-  //     | null
-  //     | ICameraVideoTrack
-  //     | null;
-  // }>({ type: null, tracks: null });
 
   config = {
     mode: 'rtc',
@@ -208,6 +197,8 @@ export const VideoCall: NextPage<VideoCallProps> = ({
           </React.Fragment>
         )}
       </Box>
+
+      {start && tracks.tracks && <ChatIndex roomName={roomName} />}
     </React.Fragment>
   );
 };

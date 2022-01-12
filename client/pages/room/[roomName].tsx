@@ -57,6 +57,8 @@ const RoomPage = (): JSX.Element => {
     return <></>;
   }
 
+  const readyToLoad = inCall && token && roomName && callType && !isLoading;
+
   return (
     <React.Fragment>
       <JoinRoomModal
@@ -66,7 +68,7 @@ const RoomPage = (): JSX.Element => {
         setCallType={setCallType}
         roomName={roomName}
       />
-      {inCall && token && roomName && callType && !isLoading && (
+      {readyToLoad && (
         <React.Fragment>
           <h1>Welcome to room {roomName}</h1>
           <DynamicVideoCall

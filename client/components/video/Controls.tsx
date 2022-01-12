@@ -7,6 +7,8 @@ import {
 } from 'agora-rtc-react';
 import { Button, SimpleGrid } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import { leave_room } from '../../shared/context/rooms/chat';
+import { RoomsContext } from '../../shared/context/rooms/RoomsProvider';
 
 interface ControlsProps {
   tracks:
@@ -26,6 +28,7 @@ export const Controls: NextPage<ControlsProps> = ({
 }): JSX.Element => {
   type mediaType = 'audio' | 'video';
   const router = useRouter();
+  const { currentRoom } = React.useContext(RoomsContext);
   const [trackState, setTrackState] = React.useState<{ video: boolean; audio: boolean }>({
     video: true,
     audio: true,
@@ -65,6 +68,7 @@ export const Controls: NextPage<ControlsProps> = ({
     tracks![1] && tracks![1].close();
     setStart(false);
     setInCall(false);
+    leave_room(currentRoom?.name!);
 
     //New
     router.push('/').then(() => {

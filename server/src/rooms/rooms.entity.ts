@@ -1,3 +1,4 @@
+import { RoomChat } from 'src/room-chat/room-chat.entity';
 import { User } from 'src/users/users.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -22,6 +24,9 @@ export class Room {
   @ManyToOne(() => User, (user) => user.rooms)
   @JoinColumn({ name: 'creatorId', referencedColumnName: 'id' })
   creator: User;
+
+  @OneToMany(() => RoomChat, (roomChat) => roomChat.room)
+  messages: RoomChat[];
 
   @CreateDateColumn()
   created_at: string;

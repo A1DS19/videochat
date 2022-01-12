@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import config from '../ormconfig';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './auth/guards/access-token.guard';
+import { RoomChatModule } from './room-chat/room-chat.module';
 @Module({
   imports: [
     RoomsModule,
@@ -17,6 +18,7 @@ import { AtGuard } from './auth/guards/access-token.guard';
     TypeOrmModule.forRoot(config),
     AuthModule,
     UsersModule,
+    RoomChatModule,
   ],
   controllers: [],
   providers: [

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-channel.dto';
 import { CreateRoomRes, GetTokenRes } from './types/controller-response-types';
@@ -29,5 +29,11 @@ export class RoomsController {
   @Get('/')
   async getRooms(): Promise<Array<Room>> {
     return await this.roomsService.getAllRooms();
+  }
+
+  @Public()
+  @Post('/room/:roomName')
+  async getRoomBYName(@Param('roomName') roomName: string): Promise<any> {
+    return await this.roomsService.getRoomByName(roomName);
   }
 }

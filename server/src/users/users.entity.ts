@@ -1,3 +1,4 @@
+import { RoomChat } from 'src/room-chat/room-chat.entity';
 import { Room } from 'src/rooms/rooms.entity';
 import {
   Column,
@@ -23,6 +24,9 @@ export class User {
 
   @OneToMany(() => Room, (room) => room.creator)
   rooms: Room[];
+
+  @OneToMany(() => RoomChat, (roomChat) => roomChat.user)
+  messages: RoomChat[];
 
   @CreateDateColumn()
   created_at: string;
