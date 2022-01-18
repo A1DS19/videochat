@@ -1,20 +1,8 @@
+import * as env from 'dotenv';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-//import { SqliteConnectionOptions } from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+env.config();
 
-// const config: SqliteConnectionOptions = {
-//   type: 'sqlite',
-//   database: 'db.sqlite',
-//   entities: ['./dist/src/**/*.entity.js'],
-//   migrations: ['./dist/src/migrations/*.js'],
-//   cli: {
-//     migrationsDir: './src/migrations',
-//   },
-//   synchronize: true,
-//   logging: 'all',
-//   logger: 'advanced-console',
-// };
-
-const config: PostgresConnectionOptions = {
+const dev_config: PostgresConnectionOptions = {
   type: 'postgres',
   host: 'localhost',
   port: 5432,
@@ -26,9 +14,31 @@ const config: PostgresConnectionOptions = {
   cli: {
     migrationsDir: './src/migrations',
   },
-  synchronize: true,
+  synchronize: false,
   logging: 'all',
   logger: 'advanced-console',
 };
 
-export default config;
+const prod_config: PostgresConnectionOptions = {
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  entities: ['./dist/src/**/*.entity.js'],
+  migrations: ['./dist/src/migrations/*.js'],
+  cli: {
+    migrationsDir: './src/migrations',
+  },
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  synchronize: false,
+  logging: 'all',
+  logger: 'advanced-console',
+};
+
+export default process.env.NODE_ENV === 'development'
+  ? dev_config
+  : prod_config;

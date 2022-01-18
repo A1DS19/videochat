@@ -18,7 +18,7 @@ export class Room {
   @Column('varchar', { length: 50 })
   name: string;
 
-  @Column()
+  @Column('int')
   creatorId: number;
 
   @Column('varchar')
