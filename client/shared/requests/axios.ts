@@ -3,7 +3,10 @@ import axios from 'axios';
 
 let isFetchingToken = false;
 export const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:5000'
+      : 'https://videochat-serverv1.herokuapp.com/',
 });
 
 api.interceptors.request.use(

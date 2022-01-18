@@ -93,13 +93,7 @@ export const SignupForm: NextPage<SignupFormProps> = ({ setAuthType }): JSX.Elem
               <Text className='link' onClick={() => setAuthType('login')}>
                 Already have an account?
               </Text>
-              <Link
-                href={
-                  process.env.NODE_ENV === 'development'
-                    ? 'http://localhost:3000/room/test_1'
-                    : ''
-                }
-              >
+              <Link href={`/room/test_1`}>
                 <a target={'_blank'} className='link'>
                   Want to test a group call?
                 </a>

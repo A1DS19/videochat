@@ -32,7 +32,7 @@ export const Room: NextPage<RoomProps> = ({ room }): JSX.Element => {
   const roomLink =
     process.env.NODE_ENV === 'development'
       ? `http://localhost:3000/room/${room.url_name}`
-      : '';
+      : `https://videochat-five.vercel.app/room/${room.url_name}`;
 
   const [blurredImage] = useBlurredImageUrl(publicId);
 
