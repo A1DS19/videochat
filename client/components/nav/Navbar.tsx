@@ -1,26 +1,24 @@
 import React from 'react';
 import type { NextPage } from 'next';
 //import { DarkModeSwitch } from './DarkModeSwitch';
-import { Button, Flex, IconButton, useColorMode, useDisclosure } from '@chakra-ui/react';
+import { Button, Flex, IconButton, useColorMode } from '@chakra-ui/react';
 import Link from 'next/link';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { LoginModal } from '../auth/login/LoginModal';
-import { SignupModal } from '../auth/signup/SignupModal';
 import { UsersContext } from '../../shared/context/users/UsersProvider';
 import { useMutation } from 'react-query';
 import { logout as logoutRequest } from '../../shared/requests/auth';
 import { me } from '../../shared/context/users/users';
+import { useRouter } from 'next/router';
 
 interface NavbarProps {}
-export type whichModal = 'login' | 'signup';
+export type whichModal = 'login' | 'signup' | 'create-room';
 
 export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
   const { isAuth, logout, addUser } = React.useContext(UsersContext);
   const [display, changeDisplay] = React.useState('none');
   const { colorMode, toggleColorMode } = useColorMode();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [openModal, setOpenModal] = React.useState<whichModal>();
   const isDark = colorMode === 'dark';
+  const router = useRouter();
   const isUserLoggedIn = React.useCallback(async () => {
     const isUser = localStorage.getItem('access_token');
     if (isUser) {
@@ -36,28 +34,30 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
   const { mutate: logoutMutation } = useMutation(logoutRequest, {
     onSuccess: () => {
       logout();
+      router.push('/auth?type=login');
     },
   });
 
   const handleModal = (type: whichModal): void => {
-    if (type === 'login') {
-      setOpenModal('login');
-      onOpen();
-      return;
-    }
+    switch (type) {
+      case 'login':
+        router.push('/auth?type=login');
+        break;
 
-    setOpenModal('signup');
-    onOpen();
+      case 'signup':
+        router.push('/auth?type=signup');
+        break;
+    }
   };
 
   const renderIsNotAuthLinks = (): JSX.Element => {
     return (
       <React.Fragment>
-        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('login')}>
+        <Button my={5} mx={1} onClick={() => handleModal('login')}>
           Login
         </Button>
 
-        <Button my={5} w={'100%'} mx={1} onClick={() => handleModal('signup')}>
+        <Button my={5} mx={1} onClick={() => handleModal('signup')}>
           Signup
         </Button>
       </React.Fragment>
@@ -67,11 +67,7 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
   const renderIsAuthLinks = (): JSX.Element => {
     return (
       <React.Fragment>
-        <Button my={5} px={6} w={'100%'} mx={1} onClick={() => handleModal('login')}>
-          My Rooms
-        </Button>
-
-        <Button my={5} w={'100%'} mx={1} onClick={async () => await logoutMutation()}>
+        <Button my={5} mx={1} onClick={async () => await logoutMutation()}>
           Logout
         </Button>
       </React.Fragment>
@@ -82,7 +78,7 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
     return (
       <React.Fragment>
         <Link href='/' passHref>
-          <Button as='a' my={5} w={'100%'} mx={1}>
+          <Button as='a' my={5} mx={1}>
             Home
           </Button>
         </Link>
@@ -90,7 +86,7 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
         {!isAuth ? renderIsNotAuthLinks() : renderIsAuthLinks()}
 
         <Link href='/about' passHref>
-          <Button as='a' my={5} w={'100%'} mx={1}>
+          <Button as='a' my={5} mx={1}>
             About
           </Button>
         </Link>
@@ -142,12 +138,6 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
           </Flex>
         </Flex>
       </Flex>
-
-      {openModal === 'login' ? (
-        <LoginModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
-      ) : (
-        <SignupModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
-      )}
     </React.Fragment>
   );
 };

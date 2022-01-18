@@ -9,7 +9,6 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  Box,
   Text,
   Flex,
 } from '@chakra-ui/react';
@@ -25,7 +24,7 @@ interface JoinRoomModalProps {
   roomName: string;
 }
 
-export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
+const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
   isOpen,
   onClose,
   setCallType,
@@ -122,3 +121,5 @@ export const JoinRoomModal: NextPage<JoinRoomModalProps> = ({
     </React.Fragment>
   );
 };
+
+export default JoinRoomModal;

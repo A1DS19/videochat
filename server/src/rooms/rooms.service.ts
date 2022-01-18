@@ -45,7 +45,7 @@ export class RoomsService {
 
   async getTokenForRoom(data: GetTokenDto): Promise<GetTokenRes> {
     const roomExists = await this.roomsRepository.findOne({
-      where: { name: data.roomName },
+      where: { url_name: data.roomName },
     });
 
     if (!roomExists) {
@@ -69,9 +69,9 @@ export class RoomsService {
     };
   }
 
-  async createRoom(data: CreateRoomDto, uid: number): Promise<CreateRoomRes> {
+  async createRoom(data: CreateRoomDto, uid: number): Promise<any> {
     const isRoomNameUnique = await this.roomsRepository.findOne({
-      where: { name: data.roomName },
+      where: { name: data.roomName, creatorId: uid },
     });
 
     if (isRoomNameUnique) {
@@ -81,9 +81,10 @@ export class RoomsService {
     const room = await this.roomsRepository.create({
       name: data.roomName,
       creatorId: uid,
+      url_name: `${data.roomName}_${uid}`,
     });
 
-    const token = this.createToken(data, uid);
+    //const token = this.createToken(data, uid);
 
     if (!room) {
       throw new BadRequestException('Room could not be created');
@@ -91,15 +92,17 @@ export class RoomsService {
 
     await this.roomsRepository.save(room);
 
-    return {
-      roomName: room.name,
-      token,
-      uid: room.creatorId,
-    };
+    return await this.roomsRepository.findOne({
+      where: { id: room.id },
+      relations: ['creator'],
+    });
   }
 
   async getAllRooms(): Promise<Array<Room>> {
-    const rooms = await this.roomsRepository.find({ relations: ['creator'] });
+    const rooms = await this.roomsRepository.find({
+      relations: ['creator'],
+      order: { created_at: 'DESC' },
+    });
 
     if (!rooms) {
       throw new NotFoundException('No rooms available');
@@ -108,9 +111,22 @@ export class RoomsService {
     return rooms;
   }
 
+  async getMyRooms(id: number): Promise<Room[]> {
+    const rooms = await this.roomsRepository.find({
+      where: { creatorId: id },
+      relations: ['creator'],
+      order: { created_at: 'DESC' },
+    });
+
+    if (!rooms) throw new NotFoundException('No rooms available');
+
+    return rooms;
+  }
+
   async getRoomByName(roomName: string): Promise<Room> {
     const room = await this.roomsRepository.findOne({
-      where: { name: roomName },
+      where: { url_name: roomName },
+      relations: ['messages', 'messages.user'],
     });
 
     if (!room) throw new NotFoundException('Room does not exist');

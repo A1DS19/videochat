@@ -1,29 +1,40 @@
-import type { GetServerSidePropsResult, NextPage } from 'next';
+import type { NextPage } from 'next';
 import Head from 'next/head';
 import React from 'react';
-import {
-  useQuery,
-  QueryClient,
-  DehydratedState,
-  dehydrate,
-  UseQueryResult,
-} from 'react-query';
-import { Error, Room } from '../shared/context/rooms/types';
+import { Room } from '../shared/context/rooms/types';
 import * as api from '../shared/context/rooms/rooms';
 import { Box } from '@chakra-ui/react';
 import { RoomIndex } from '../components/rooms/RoomIndex';
 import { RoomsContext } from '../shared/context/rooms/RoomsProvider';
+import { UsersContext } from '../shared/context/users/UsersProvider';
+import { useRouter } from 'next/router';
 
 const Home: NextPage = () => {
   const { addRooms } = React.useContext(RoomsContext);
-  const { data, isError, error }: UseQueryResult<Room[], Error> = useQuery<Room[], Error>(
-    'rooms/all_rooms',
-    api.getAllRooms
-  );
+  const { currentUser } = React.useContext(UsersContext);
+  const [isLoading, setLoading] = React.useState(false);
+  const router = useRouter();
 
   React.useEffect(() => {
-    addRooms(data as Room[]);
-  }, [data, addRooms]);
+    if (!localStorage.getItem('access_token')) {
+      router.push('/auth?type=login');
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (currentUser) {
+      (async () => {
+        setLoading(true);
+        const data = await api.getMyRooms(currentUser?.id!);
+        setLoading(false);
+        addRooms(data as Room[]);
+      })();
+    }
+  }, [currentUser]);
+
+  if (isLoading) {
+    return <div></div>;
+  }
 
   return (
     <Box>
@@ -35,19 +46,6 @@ const Home: NextPage = () => {
       <RoomIndex />
     </Box>
   );
-};
-
-export const getServerSideProps = async (): Promise<
-  GetServerSidePropsResult<{ dehydratedState: DehydratedState }>
-> => {
-  const queryClient = new QueryClient();
-  await queryClient.prefetchQuery('rooms/all_rooms', api.getAllRooms);
-
-  return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-    },
-  };
 };
 
 export default Home;

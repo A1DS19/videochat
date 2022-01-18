@@ -2,26 +2,23 @@ import React from 'react';
 import type { NextPage } from 'next';
 import { Field, Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import { signin, SigninType } from '../../../shared/requests/auth';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  ModalBody,
-  ModalFooter,
-} from '@chakra-ui/react';
+import { Box, Button, FormControl, Text } from '@chakra-ui/react';
 import { loginSchema } from '../../shared/validationSchemas/AuthSchemas';
 import { FormValidationError } from '../../shared/FormValidationError';
 import { useMutation } from 'react-query';
 import { CostumAlert } from '../../shared/CostumAlert';
 import { me } from '../../../shared/context/users/users';
 import { UsersContext } from '../../../shared/context/users/UsersProvider';
+import { whichAuth } from '../../../pages/auth';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 interface LoginFormProps {
-  onClose: () => void;
+  setAuthType: React.Dispatch<React.SetStateAction<whichAuth>>;
 }
 
-export const LoginForm: NextPage<LoginFormProps> = ({ onClose }): JSX.Element => {
+export const LoginForm: NextPage<LoginFormProps> = ({ setAuthType }): JSX.Element => {
+  const router = useRouter();
   const { addUser } = React.useContext(UsersContext);
   const [resError, setResError] = React.useState<string | null>(null);
   const { mutate } = useMutation(signin, {
@@ -31,13 +28,14 @@ export const LoginForm: NextPage<LoginFormProps> = ({ onClose }): JSX.Element =>
     onSuccess: async () => {
       const data = await me();
       addUser(data);
-      onClose();
+      router.push('/');
     },
   });
 
   const initialValues: SigninType = {
     email: '',
     password: '',
+    userName: '',
   };
 
   return (
@@ -49,30 +47,72 @@ export const LoginForm: NextPage<LoginFormProps> = ({ onClose }): JSX.Element =>
           await mutate(values);
         }}
       >
-        {({ errors, touched }: FormikProps<SigninType>) => (
+        {({
+          errors,
+          touched,
+          isValid,
+          dirty,
+          values,
+          isSubmitting,
+        }: FormikProps<SigninType>) => (
           <Form>
-            <ModalBody pb={6}>
-              {resError && <CostumAlert type='error' msg={resError} />}
+            {resError && <CostumAlert type='error' msg={resError} />}
+            <Box>
               <FormControl>
-                <FormLabel htmlFor='email'>Email Address</FormLabel>
-                <Field className='input' id='email' type='email' name='email' />
+                <Field
+                  placeholder='Email'
+                  className='input'
+                  id='email'
+                  type='email'
+                  name='email'
+                />
 
                 <FormValidationError errors={errors} touched={touched} name='email' />
               </FormControl>
 
               <FormControl mt={2}>
-                <FormLabel htmlFor='password'>Password</FormLabel>
-                <Field className='input' id='password' type='password' name='password' />
+                <Field
+                  placeholder='Password'
+                  className='input'
+                  id='password'
+                  type='password'
+                  name='password'
+                />
                 <FormValidationError errors={errors} touched={touched} name='password' />
               </FormControl>
-            </ModalBody>
+            </Box>
 
-            <ModalFooter>
-              <Button colorScheme='blue' mr={3} type='submit'>
+            <Box mt={2}>
+              <Text className='link' onClick={() => setAuthType('signup')}>
+                Don't have an account?
+              </Text>
+              <Link
+                href={
+                  process.env.NODE_ENV === 'development'
+                    ? 'http://localhost:3000/room/test_1'
+                    : ''
+                }
+              >
+                <a target={'_blank'} className='link'>
+                  Want to test a group call?
+                </a>
+              </Link>
+            </Box>
+
+            <Box my={3}>
+              <Button
+                disabled={
+                  (!isValid && !dirty) ||
+                  values.email.length < 0 ||
+                  values.password.length < 0
+                }
+                isLoading={isSubmitting}
+                colorScheme='blue'
+                type='submit'
+              >
                 Submit
               </Button>
-              <Button onClick={onClose}>Cancel</Button>
-            </ModalFooter>
+            </Box>
           </Form>
         )}
       </Formik>

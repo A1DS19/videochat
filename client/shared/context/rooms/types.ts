@@ -5,11 +5,13 @@ export type Room = {
   name: string;
   created_at: Date;
   creator: Creator;
+  url_name: string;
 };
 
 export type Creator = {
   id: number;
   email: string;
+  userName: string;
   created_at: Date;
 };
 
@@ -34,6 +36,12 @@ export type RoomChat = {
   message: string;
   user: User;
   room: Room;
+};
+
+export type CreateRoomRes = {
+  roomName: string;
+  token: string;
+  uid: number;
 };
 
 export type RoomsContextState = {

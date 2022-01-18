@@ -24,16 +24,21 @@ export class AuthService {
   ) {}
 
   async signupLocal(data: SignupLocalDto): Promise<TokensRes> {
-    const { password, email } = data;
+    const { password, email, userName } = data;
 
     let user = await this.usersRepository.findOne({ where: { email } });
 
     if (user) throw new BadRequestException('Email already exists');
 
+    user = await this.usersRepository.findOne({ where: { userName } });
+
+    if (user) throw new BadRequestException('Username already exists');
+
     const hashedPassword = await this.hashData(password);
 
     user = await this.usersRepository.create({
       email,
+      userName,
       password: hashedPassword,
     });
 

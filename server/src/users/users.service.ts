@@ -13,7 +13,7 @@ export class UsersService {
     const user = await this.usersRepository
       .createQueryBuilder('user')
       .where('id = :uid', { uid })
-      .select(['user.email', 'user.id', 'user.created_at'])
+      .select(['user.email', 'user.id', 'user.created_at', 'user.userName'])
       .getOne();
 
     if (!user) {

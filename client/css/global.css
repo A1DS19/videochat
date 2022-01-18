@@ -25,3 +25,28 @@
   border-color: inherit;
   background: inherit;
 }
+
+.chat {
+  height: 30vh;
+  overflow-y: scroll;
+}
+
+.link {
+  color: #3182ce;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-decoration-color: #3182ce;
+  -moz-text-decoration-color: #3182ce;
+  cursor: pointer;
+}
+
+.rooms {
+  height: 90vh;
+  overflow-y: scroll;
+}
+
+.share-item {
+  margin: 0 2px;
+}

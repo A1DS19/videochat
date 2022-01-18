@@ -5,10 +5,12 @@ import {
   ICameraVideoTrack,
   IAgoraRTCClient,
 } from 'agora-rtc-react';
-import { Button, SimpleGrid } from '@chakra-ui/react';
+import { Button, SimpleGrid, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { leave_room } from '../../shared/context/rooms/chat';
 import { RoomsContext } from '../../shared/context/rooms/RoomsProvider';
+import { socket, leave_room } from '../../shared/context/rooms/chat';
+import { UsersContext } from '../../shared/context/users/UsersProvider';
+//import { socket, leave_room } from '../../shared/context/rooms/chat';
 
 interface ControlsProps {
   tracks:
@@ -27,12 +29,25 @@ export const Controls: NextPage<ControlsProps> = ({
   client,
 }): JSX.Element => {
   type mediaType = 'audio' | 'video';
+  const toast = useToast();
   const router = useRouter();
   const { currentRoom } = React.useContext(RoomsContext);
+  const { currentUser } = React.useContext(UsersContext);
   const [trackState, setTrackState] = React.useState<{ video: boolean; audio: boolean }>({
     video: true,
     audio: true,
   });
+
+  React.useEffect(() => {
+    socket.on('leftRoom', (res) => {
+      toast({
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+        title: `User ${res} left`,
+      });
+    });
+  }, []);
 
   const button_on_off = (type: mediaType): string => {
     switch (type) {
@@ -61,19 +76,23 @@ export const Controls: NextPage<ControlsProps> = ({
     }
   };
 
-  const leaveChannel = async (): Promise<void> => {
-    await client.leave();
-    client.removeAllListeners();
-    tracks![0] && tracks![0].close();
-    tracks![1] && tracks![1].close();
-    setStart(false);
-    setInCall(false);
-    leave_room(currentRoom?.name!);
-
-    //New
-    router.push('/').then(() => {
-      location.reload();
-    });
+  const leaveChannel = (): void => {
+    client
+      .leave()
+      .then(() => {
+        client.removeAllListeners();
+        tracks![0] && tracks![0].close();
+        tracks![1] && tracks![1].close();
+        setStart(false);
+        setInCall(false);
+        leave_room({ roomName: currentRoom?.url_name!, user: currentUser! });
+        router.push('/').then(() => {
+          location.reload();
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (

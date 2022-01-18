@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { User } from 'src/users/users.entity';
 import { RoomChatService } from './room-chat.service';
 import { MessagePayload } from './types/room-chat.types';
 
@@ -17,7 +18,7 @@ export class RoomChatGateway
 {
   constructor(private roomChatService: RoomChatService) {}
   private logger: Logger = new Logger();
-  @WebSocketServer() wss: Server; //Envia mensaje a TODO el servidor
+  @WebSocketServer() wss: Server;
 
   afterInit() {
     this.logger.log(`"room-chat" gateway initialized`);
@@ -33,21 +34,27 @@ export class RoomChatGateway
 
   @SubscribeMessage('msgToServer')
   async handleMessage(client: Socket, payload: MessagePayload): Promise<void> {
-    console.log(payload);
-
     const message = await this.roomChatService.create_message(payload);
-    this.wss.to(message.room.name).emit('msgToClient', message.message);
+    this.wss.in(message.room.url_name).emit('msgToClient', message);
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, roomName: string): void {
-    client.join(roomName);
-    client.emit('joinedRoom', roomName);
+  handleJoinRoom(
+    client: Socket,
+    payload: { roomName: string; user: User | null },
+  ): void {
+    const res = payload.user ? payload.user.userName : '';
+    client.join(payload.roomName);
+    this.wss.to(payload.roomName).emit('joinedRoom', res);
   }
 
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(client: Socket, roomName: string): void {
-    client.leave(roomName);
-    client.emit('leftRoom', roomName);
+  handleLeaveRoom(
+    client: Socket,
+    payload: { roomName: string; user: User | null },
+  ): void {
+    const res = payload.user ? payload.user.userName : '';
+    client.leave(payload.roomName);
+    this.wss.to(payload.roomName).emit('leftRoom', res);
   }
 }

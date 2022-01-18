@@ -36,12 +36,14 @@ api.interceptors.response.use(
     const originalRequest = config;
 
     if (
-      originalRequest.url !== '/auth/local/signin' ||
-      (originalRequest.url !== '/auth/local/signup' && status === 401)
+      (originalRequest.url !== '/auth/local/signin' ||
+        originalRequest.url !== '/rooms/create' ||
+        originalRequest.url !== '/auth/local/signup') &&
+      err.response
     ) {
-      if (!isFetchingToken) {
+      if (status === 401 && !originalRequest._retry) {
         try {
-          isFetchingToken = true;
+          //isFetchingToken = true;
           const token = !!localStorage.getItem('refresh_token')
             ? JSON.stringify('Bearer ' + localStorage.getItem('refresh_token'))
             : '';
@@ -63,7 +65,7 @@ api.interceptors.response.use(
         } catch (_error) {
           return Promise.reject(_error);
         } finally {
-          isFetchingToken = false;
+          //isFetchingToken = false;
         }
       }
     }

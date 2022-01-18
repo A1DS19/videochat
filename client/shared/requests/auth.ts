@@ -3,6 +3,7 @@ import { api } from './axios';
 export type SignupType = {
   email: string;
   password: string;
+  userName: string;
 };
 
 export type SigninType = SignupType;

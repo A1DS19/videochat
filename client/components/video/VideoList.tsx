@@ -38,11 +38,7 @@ export const VideoList: NextPage<VideoListProps> = ({
               localUID === parseInt(userSpeaking?.uid as string)) &&
             'user-speaking'
           }`}
-        >
-          <Text textAlign={'center'} fontSize={'xl'}>
-            no video
-          </Text>
-        </Box>
+        />
       </React.Fragment>
     );
   };
@@ -70,10 +66,11 @@ export const VideoList: NextPage<VideoListProps> = ({
   return (
     <React.Fragment>
       <Grid
-        height={'50vh'}
-        width={'70vw'}
-        padding={'2rem'}
-        templateColumns={'repeat(3, 1fr)'}
+        height={'45vh'}
+        width={'100vw'}
+        padding={1}
+        templateColumns={'repeat(2, 1fr)'}
+        my={2}
         gap={1}
       >
         {tracks![1] ? (

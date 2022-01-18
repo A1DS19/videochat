@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-channel.dto';
-import { CreateRoomRes, GetTokenRes } from './types/controller-response-types';
+import { GetTokenRes } from './types/controller-response-types';
 import { GetTokenDto } from './dto/get-token.dto';
 import { Room } from './rooms.entity';
 import { CurrentUserID } from 'src/auth/decorators/get-current-user-id.decorator';
@@ -21,7 +21,7 @@ export class RoomsController {
   async createRoom(
     @Body() data: CreateRoomDto,
     @CurrentUserID() uid: number,
-  ): Promise<CreateRoomRes> {
+  ): Promise<Room> {
     return await this.roomsService.createRoom(data, uid);
   }
 
@@ -31,9 +31,14 @@ export class RoomsController {
     return await this.roomsService.getAllRooms();
   }
 
+  @Get('/:id')
+  async getMyRooms(@Param('id') id: number): Promise<Room[]> {
+    return await this.roomsService.getMyRooms(id);
+  }
+
   @Public()
   @Post('/room/:roomName')
-  async getRoomBYName(@Param('roomName') roomName: string): Promise<any> {
+  async getRoomBYName(@Param('roomName') roomName: string): Promise<Room> {
     return await this.roomsService.getRoomByName(roomName);
   }
 }

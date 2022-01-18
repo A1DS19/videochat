@@ -3,3 +3,5 @@ export type MessagePayload = {
   user_id: number;
   message: string;
 };
+
+export type Callback = () => void;

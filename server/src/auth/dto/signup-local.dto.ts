@@ -6,6 +6,9 @@ export class SignupLocalDto {
   email: string;
 
   @IsNotEmpty()
+  userName: string;
+
+  @IsNotEmpty()
   @IsString()
   @Length(10, 50)
   password: string;

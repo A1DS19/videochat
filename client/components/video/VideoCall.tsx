@@ -197,7 +197,6 @@ export const VideoCall: NextPage<VideoCallProps> = ({
           </React.Fragment>
         )}
       </Box>
-
       {start && tracks.tracks && <ChatIndex roomName={roomName} />}
     </React.Fragment>
   );

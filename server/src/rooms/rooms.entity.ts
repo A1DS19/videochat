@@ -15,11 +15,14 @@ export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 50, unique: true })
+  @Column('varchar', { length: 50 })
   name: string;
 
   @Column()
   creatorId: number;
+
+  @Column('varchar')
+  url_name: string;
 
   @ManyToOne(() => User, (user) => user.rooms)
   @JoinColumn({ name: 'creatorId', referencedColumnName: 'id' })

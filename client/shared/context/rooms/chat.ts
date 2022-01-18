@@ -1,10 +1,10 @@
-import React from 'react';
-import { io } from 'socket.io-client';
+import { Manager } from 'socket.io-client';
 import { api } from '../../requests/axios';
-import { RoomsContext } from './RoomsProvider';
-const socket = io('http://localhost:5000/room-chat');
+import { User } from '../users/types';
+import { Room } from './types';
 
-const { setCurrentRoomChat } = React.useContext(RoomsContext);
+const manager = new Manager('http://localhost:5000');
+export const socket = manager.socket('/room-chat');
 
 export type Message = {
   room_id: number;
@@ -12,28 +12,34 @@ export type Message = {
   message: string;
 };
 
-export const get_all_messages_for_chat = async (room_id: number) => {
+export type MessageResponse = {
+  id: number;
+  userId: number;
+  user: User;
+  roomId: number;
+  room: Room;
+  message: string;
+};
+
+export type JoinRoom = { roomName: string; user: User };
+export type LeaveRoom = JoinRoom;
+
+export const get_all_messages_for_chat = async (
+  room_id: number
+): Promise<MessageResponse[]> => {
   const { data } = await api.get(`/chat-room/${room_id}`);
   return data;
 };
 
-export const join_room = (roomName: string) => {
-  socket.emit('joinRoom', roomName);
-  socket.on('joinedRoom', (res) => {
-    console.log('JOIN ROOM', res);
-  });
+export const join_room = (payload: JoinRoom) => {
+  socket.emit('joinRoom', payload);
 };
 
-export const leave_room = (roomName: string) => {
-  socket.emit('leaveRoom', roomName);
-  socket.on('leftRoom', (res) => {
-    console.log('LEFT ROOM', res);
-  });
+export const leave_room = (payload: LeaveRoom) => {
+  socket.emit('leaveRoom', payload);
+  socket.close();
 };
 
 export const send_message = (message: Message) => {
   socket.emit('msgToServer', message);
-  socket.on('msgToClient', (msg) => {
-    setCurrentRoomChat(msg);
-  });
 };

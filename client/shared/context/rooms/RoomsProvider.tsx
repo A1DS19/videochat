@@ -23,7 +23,12 @@ export const RoomsProvider: React.FC = ({ children }): JSX.Element => {
   const addRoom = (room: Room) => setRooms((prevRoom) => [...prevRoom, room]);
   const setCurrRoom = (room: Room) => setCurrentRoom(room);
   const setCurrRoomChat = (message: RoomChat) =>
-    setCurrentRoomChat((prevMessage) => [...prevMessage, message]);
+    setCurrentRoomChat((prevMessage) => {
+      if (!prevMessage.includes(message)) {
+        return [...prevMessage, message];
+      }
+      return prevMessage;
+    });
 
   return (
     <RoomsContext.Provider

@@ -2,11 +2,23 @@ import React from 'react';
 import type { NextPage } from 'next';
 import { Room as RoomType } from '../../shared/context/rooms/types';
 import Image from 'next/image';
-import { Box, Text } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import buildUrl, { extractPublicId } from 'cloudinary-build-url';
 import { useBlurredImageUrl } from '../../shared/hooks/useIMageTransformations';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import {
+  FacebookShareButton,
+  RedditShareButton,
+  TelegramShareButton,
+  TwitterShareButton,
+  WhatsappShareButton,
+  WhatsappIcon,
+  FacebookIcon,
+  RedditIcon,
+  TelegramIcon,
+  TwitterIcon,
+} from 'react-share';
 
 interface RoomProps {
   room: RoomType;
@@ -14,8 +26,13 @@ interface RoomProps {
 
 export const Room: NextPage<RoomProps> = ({ room }): JSX.Element => {
   const publicId = extractPublicId(
-    'https://res.cloudinary.com/ai1ds/image/upload/v1640924338/Blog-cover-image_nvqacy.jpg'
+    'https://res.cloudinary.com/ai1ds/image/upload/v1642537069/test_ddmsct.gif'
   );
+
+  const roomLink =
+    process.env.NODE_ENV === 'development'
+      ? `http://localhost:3000/room/${room.url_name}`
+      : '';
 
   const [blurredImage] = useBlurredImageUrl(publicId);
 
@@ -32,8 +49,16 @@ export const Room: NextPage<RoomProps> = ({ room }): JSX.Element => {
 
   return (
     <React.Fragment>
-      <Box backgroundColor={'#edf2f7'} padding={5} borderRadius={'lg'} maxWidth={'30%'}>
-        <Link href={`/room/${room.name}`}>
+      <Box
+        ml={'auto'}
+        mr={5}
+        mt={5}
+        maxWidth={'70%'}
+        backgroundColor={'#edf2f7'}
+        padding={5}
+        borderRadius={'lg'}
+      >
+        <Link href={`/room/${room.url_name}`}>
           <a>
             <Box cursor={'pointer'}>
               <motion.div whileHover={{ x: 5, y: -5 }}>
@@ -49,16 +74,40 @@ export const Room: NextPage<RoomProps> = ({ room }): JSX.Element => {
             </Box>
           </a>
         </Link>
-        <Link href={`/room/${room.name}`}>
-          <a>
-            <Text _hover={{ color: 'gray.600' }} cursor={'pointer'}>
-              {room.name}
-            </Text>
-          </a>
-        </Link>
-        <Text fontSize={'small'} color={'gray'}>
-          Creator: {room.creator.email}
-        </Text>
+        <Flex>
+          <Text mr={1}>Name:</Text>
+          <Link href={`/room/${room.url_name}`}>
+            <a>
+              <Text _hover={{ color: 'gray.600' }} cursor={'pointer'}>
+                {room.name}
+              </Text>
+            </a>
+          </Link>
+        </Flex>
+        <Box mt={2}>
+          <Text>Share room</Text>
+          <Flex>
+            <FacebookShareButton className='share-item' url={roomLink}>
+              <FacebookIcon round={true} size={35} />
+            </FacebookShareButton>
+
+            <RedditShareButton className='share-item' url={roomLink}>
+              <RedditIcon round={true} size={35} />
+            </RedditShareButton>
+
+            <TelegramShareButton className='share-item' url={roomLink}>
+              <TelegramIcon round={true} size={35} />
+            </TelegramShareButton>
+
+            <TwitterShareButton className='share-item' url={roomLink}>
+              <TwitterIcon round={true} size={35} />
+            </TwitterShareButton>
+
+            <WhatsappShareButton className='share-item' url={roomLink}>
+              <WhatsappIcon round={true} size={35} />
+            </WhatsappShareButton>
+          </Flex>
+        </Box>
       </Box>
     </React.Fragment>
   );

@@ -7,15 +7,15 @@ import {
   ModalHeader,
   ModalCloseButton,
 } from '@chakra-ui/react';
-import { SignupForm } from './SignupForm';
+import { CreateRoomForm } from './CreateRoomForm';
 
-interface SignupModalProps {
+interface CreateRoomModalProps {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
 }
 
-export const SignupModal: NextPage<SignupModalProps> = ({
+export const CreateRoomModal: NextPage<CreateRoomModalProps> = ({
   isOpen,
   onClose,
 }): JSX.Element => {
@@ -24,9 +24,8 @@ export const SignupModal: NextPage<SignupModalProps> = ({
       <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Create your account</ModalHeader>
+          <ModalHeader>Create a new room</ModalHeader>
           <ModalCloseButton />
-          <SignupForm onClose={onClose} />
         </ModalContent>
       </Modal>
     </React.Fragment>

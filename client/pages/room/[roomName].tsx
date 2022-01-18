@@ -4,16 +4,24 @@ import dynamic from 'next/dynamic';
 import { getRoomToken } from '../../shared/context/rooms/rooms';
 import { useMutation } from 'react-query';
 import { UsersContext } from '../../shared/context/users/UsersProvider';
-import { JoinRoomModal } from '../../components/video/JoinRoomModal';
-import { useDisclosure } from '@chakra-ui/react';
+import { useDisclosure, useToast } from '@chakra-ui/react';
+import { socket, join_room } from '../../shared/context/rooms/chat';
 
 const DynamicVideoCall = dynamic(() => import('../../components/video/VideoCall'), {
   ssr: false,
 });
 
+const DynamicJoinRoomModal = dynamic(
+  () => import('../../components/video/JoinRoomModal'),
+  {
+    ssr: false,
+  }
+);
+
 export type CallType = 'audio' | 'video' | 'audio_video';
 
 const RoomPage = (): JSX.Element => {
+  const toast = useToast();
   const router = useRouter();
   const [inCall, setInCall] = React.useState<boolean>(false);
   const roomName = router.query.roomName as string;
@@ -22,18 +30,33 @@ const RoomPage = (): JSX.Element => {
   const { currentUser } = React.useContext(UsersContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [callType, setCallType] = React.useState<CallType | null>(null);
+  const { isLoading: roomTokenLoading, mutate: mutateRoomToken } = useMutation(
+    getRoomToken,
+    {
+      onSuccess: (data) => {
+        setToken(data.token);
+        setUid(data.uid);
+        setInCall(true);
+        onOpen();
+      },
+      onError: () => {
+        router.push('/404');
+      },
+    }
+  );
 
-  const { isLoading, mutate } = useMutation(getRoomToken, {
-    onSuccess: (data) => {
-      setToken(data.token);
-      setUid(data.uid);
-      setInCall(true);
-      onOpen();
-    },
-    onError: () => {
-      router.push('/404');
-    },
-  });
+  const readyToLoad = inCall && token && roomName && callType && !roomTokenLoading;
+
+  React.useEffect(() => {
+    socket.on('joinedRoom', (res) => {
+      toast({
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+        title: `User ${res} joined`,
+      });
+    });
+  }, []);
 
   React.useEffect(() => {
     if (!roomName) {
@@ -41,27 +64,26 @@ const RoomPage = (): JSX.Element => {
     }
 
     async function getCredentials() {
-      mutate({ roomName, uid: currentUser?.id ? currentUser.id : null });
+      mutateRoomToken({ roomName, uid: currentUser?.id ? currentUser.id : null });
     }
 
     getCredentials();
+
+    join_room({ roomName, user: currentUser! });
 
     window.onbeforeunload = function (e) {
       e.preventDefault();
       e.returnValue =
         'Are you sure you want to leave, you will be disconnected from the call';
     };
-  }, [roomName, router, mutate]);
+  }, [roomName, router, mutateRoomToken]);
 
-  if (isLoading) {
-    return <></>;
-  }
-
-  const readyToLoad = inCall && token && roomName && callType && !isLoading;
+  if (roomTokenLoading || typeof window === 'undefined')
+    return <React.Fragment>Loading</React.Fragment>;
 
   return (
     <React.Fragment>
-      <JoinRoomModal
+      <DynamicJoinRoomModal
         isOpen={isOpen}
         onClose={onClose}
         onOpen={onOpen}
@@ -70,7 +92,6 @@ const RoomPage = (): JSX.Element => {
       />
       {readyToLoad && (
         <React.Fragment>
-          <h1>Welcome to room {roomName}</h1>
           <DynamicVideoCall
             setInCall={setInCall}
             roomName={roomName}

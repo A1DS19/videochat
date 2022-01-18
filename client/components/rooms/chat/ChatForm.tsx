@@ -5,16 +5,17 @@ import { MessageSchema } from '../../shared/validationSchemas/MessageValidationS
 import { UsersContext } from '../../../shared/context/users/UsersProvider';
 import { RoomsContext } from '../../../shared/context/rooms/RoomsProvider';
 import { Box, Button, FormControl, useDisclosure } from '@chakra-ui/react';
-import { LoginModal } from '../../auth/login/LoginModal';
 import { Message, send_message } from '../../../shared/context/rooms/chat';
-import { Message as MessageComp } from './Message';
+import { useRouter } from 'next/router';
+import { AuthModal } from './AuthModal';
 
 interface ChatListProps {}
 
-export const ChatList: NextPage<ChatListProps> = ({}): JSX.Element => {
+export const ChatForm: NextPage<ChatListProps> = ({}): JSX.Element => {
   const { currentUser } = React.useContext(UsersContext);
-  const { currentRoom, currentRoomChat } = React.useContext(RoomsContext);
+  const { currentRoom } = React.useContext(RoomsContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const router = useRouter();
 
   const initialValues: Message = {
     user_id: currentUser?.id!,
@@ -22,17 +23,8 @@ export const ChatList: NextPage<ChatListProps> = ({}): JSX.Element => {
     message: '',
   };
 
-  const renderChat = () => {
-    return currentRoomChat.map((message) => (
-      <MessageComp message={message} currentUserUID={currentUser?.id!} />
-    ));
-  };
-
-  console.log(currentRoomChat);
-
   return (
     <React.Fragment>
-      {currentRoomChat && renderChat()}
       <Formik
         validationSchema={MessageSchema}
         initialValues={initialValues}
@@ -41,7 +33,10 @@ export const ChatList: NextPage<ChatListProps> = ({}): JSX.Element => {
           { setSubmitting, resetForm }: FormikHelpers<Message>
         ) => {
           if (!currentUser) {
+            setSubmitting(false);
+            resetForm();
             onOpen();
+            return;
           }
 
           send_message(values);
@@ -70,8 +65,7 @@ export const ChatList: NextPage<ChatListProps> = ({}): JSX.Element => {
           );
         }}
       </Formik>
-
-      <LoginModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
+      <AuthModal isOpen={isOpen} onClose={onClose} />
     </React.Fragment>
   );
 };
