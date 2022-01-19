@@ -76,7 +76,7 @@ const RoomPage = (): JSX.Element => {
       e.returnValue =
         'Are you sure you want to leave, you will be disconnected from the call';
     };
-  }, [roomName, router, mutateRoomToken]);
+  }, [roomName]);
 
   if (roomTokenLoading || typeof window === 'undefined')
     return <React.Fragment>Loading</React.Fragment>;
