@@ -78,7 +78,7 @@ const RoomPage = (): JSX.Element => {
       e.returnValue =
         'Are you sure you want to leave, you will be disconnected from the call';
     };
-  }, [roomName, currentUser]);
+  }, [roomName]);
 
   if (roomTokenLoading) {
     return <></>;

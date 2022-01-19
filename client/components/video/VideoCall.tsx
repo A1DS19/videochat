@@ -52,6 +52,8 @@ export const VideoCall: NextPage<VideoCallProps> = ({
     codec: 'vp8',
   };
 
+  console.log(appID);
+
   useClient = createClient(config);
   const client = useClient();
   let tracks: {
