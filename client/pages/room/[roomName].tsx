@@ -99,7 +99,7 @@ const RoomPage = (): JSX.Element => {
             setInCall={setInCall}
             roomName={roomName}
             token={token.replaceAll(' ', '+')}
-            uid={currentUser?.id ? currentUser.id : (uid as number)}
+            uid={uid as number}
             callType={callType}
           />
         </React.Fragment>
