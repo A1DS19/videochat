@@ -67,7 +67,9 @@ const RoomPage = (): JSX.Element => {
       mutateRoomToken({ roomName, uid: currentUser?.id ? currentUser.id : null });
     }
 
-    getCredentials();
+    (async () => {
+      await getCredentials();
+    })();
 
     join_room({ roomName, user: currentUser! });
 

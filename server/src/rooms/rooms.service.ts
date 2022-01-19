@@ -7,13 +7,12 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
 import { ENV_CONFIGURATION } from 'config/configuration';
-import { RoomChat } from 'src/room-chat/room-chat.entity';
 import { User } from 'src/users/users.entity';
 import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-channel.dto';
 import { GetTokenDto } from './dto/get-token.dto';
 import { Room } from './rooms.entity';
-import { CreateRoomRes, GetTokenRes } from './types/controller-response-types';
+import { GetTokenRes } from './types/controller-response-types';
 
 @Injectable()
 export class RoomsService {

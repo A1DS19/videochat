@@ -23,7 +23,9 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
     const isUser = localStorage.getItem('access_token');
     if (isUser) {
       const data = await me();
-      if (data) addUser(data);
+      if (data) {
+        addUser(data);
+      }
     }
   }, []);
 
