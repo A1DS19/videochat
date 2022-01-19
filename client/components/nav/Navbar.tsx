@@ -5,10 +5,11 @@ import { Button, Flex, IconButton, useColorMode } from '@chakra-ui/react';
 import Link from 'next/link';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { UsersContext } from '../../shared/context/users/UsersProvider';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { logout as logoutRequest } from '../../shared/requests/auth';
 import { me } from '../../shared/context/users/users';
 import { useRouter } from 'next/router';
+import { User } from '../../shared/context/users/types';
 
 interface NavbarProps {}
 export type whichModal = 'login' | 'signup' | 'create-room';
@@ -19,19 +20,22 @@ export const Navbar: NextPage<NavbarProps> = ({}): JSX.Element => {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === 'dark';
   const router = useRouter();
-  const isUserLoggedIn = React.useCallback(async () => {
-    const isUser = localStorage.getItem('access_token');
-    if (isUser) {
-      const data = await me();
-      if (data) {
-        addUser(data);
-      }
-    }
-  }, []);
+  const { data, isLoading } = useQuery<User, Error>('me', me, {
+    onSuccess: (user) => {
+      addUser(user);
+    },
+  });
 
-  React.useEffect(() => {
-    isUserLoggedIn();
-  }, []);
+  // const isUserLoggedIn = React.useCallback(async () => {
+  //   const isUser = localStorage.getItem('access_token');
+  //   if (isUser) {
+  //     const data = await me();
+  //     if (data) {
+  //       addUser(data);
+  //     }
+  //   }
+  // }, []);
+  // React.useEffect(() => {}, [data]);
 
   const { mutate: logoutMutation } = useMutation(logoutRequest, {
     onSuccess: () => {
