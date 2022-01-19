@@ -3,7 +3,11 @@ import { api } from '../../requests/axios';
 import { User } from '../users/types';
 import { Room } from './types';
 
-const manager = new Manager('http://localhost:5000');
+const manager = new Manager(
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5000'
+    : 'https://videochat-serverv1.herokuapp.com'
+);
 export const socket = manager.socket('/room-chat');
 
 export type Message = {
