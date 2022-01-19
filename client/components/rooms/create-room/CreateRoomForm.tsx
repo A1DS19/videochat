@@ -7,10 +7,7 @@ import {
   Button,
   Flex,
   FormControl,
-  FormLabel,
   Heading,
-  ModalBody,
-  ModalFooter,
   Text,
   useToast,
 } from '@chakra-ui/react';
@@ -44,7 +41,7 @@ export const CreateRoomForm: NextPage<CreateRoomFormProps> = ({}): JSX.Element =
       setLink(
         process.env.NODE_ENV === 'development'
           ? `http://localhost:3000/room/${room.url_name}`
-          : ''
+          : `https://videochat-serverv1.herokuapp.com/room/${room.url_name}`
       );
     },
     onError: (err: any) => {
